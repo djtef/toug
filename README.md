@@ -18,7 +18,7 @@
 
 Dans cette configuration de base on alimente l'ESP32 par son port USB en le branchant sur le port USB du dessus normalement dédié à la box officielle.
 
-+ PCB (récupérer le [fichier Gerber](gerber-v1.0.zip) et le faire fabriquer sur un site comme JLCPCB.com)
++ PCB (récupérer le [fichier Gerber](gerber-v1.0.zip) ou le [projet EasyEDA](easyeda-v1-0.json) et le faire fabriquer sur un site comme JLCPCB.com)
 + D1 mini ESP32 ([AliExpress](https://fr.aliexpress.com/item/1005005972627549.html))
 + Convertisseur RS485/TTL ([AliExpress](https://fr.aliexpress.com/item/1005006340391490.html))
 + Convertisseur de niveau logique bidirectionnel 5V <=> 3.3V ([AliExpress](https://fr.aliexpress.com/item/1005006068381598.html))
