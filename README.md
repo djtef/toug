@@ -24,6 +24,8 @@ Dans cette configuration de base on alimente l'ESP32 par son port USB en le bran
 + Convertisseur de niveau logique bidirectionnel 5V <=> 3.3V ([AliExpress](https://fr.aliexpress.com/item/1005006068381598.html))
 + Terminal 4 bornes ([AliExpress](https://fr.aliexpress.com/item/32828459901.html))
 
+Pour le PCB sans les bouches, récupérer le [fichier Gerber Basic](Gerber_ESPHome-Aldes-T.One-Basic-v1.0_PCB_ESPHome-Aldes_2024-12-31.zip)  ou le [projet EasyEAD](SCH_ESPHome-Aldes-T.One-Basic-v1.0_2024-12-31.json)
+
 Connectique :
 
 + Headers mâles ([AliExpress](https://fr.aliexpress.com/item/32973181162.html))
