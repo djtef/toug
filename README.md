@@ -19,7 +19,7 @@
 Dans cette configuration de base on alimente l'ESP32 par son port USB en le branchant sur le port USB du dessus normalement dédié à la box officielle.
 
 + PCB (récupérer le [fichier Gerber](gerber-v1.0.zip) ou le [projet EasyEDA](easyeda-v1-0.json) et le faire fabriquer sur un site comme JLCPCB.com)
-+ D1 mini ESP32 ([AliExpress](https://fr.aliexpress.com/item/1005005972627549.html))
++ D1 mini ESP32 ([AliExpress](https://fr.aliexpress.com/item/1005005972627549.html)) ou ([Amazon](https://amzn.eu/d/dTeepAy))
 + Convertisseur RS485/TTL ([AliExpress](https://fr.aliexpress.com/item/1005006340391490.html))
 + Convertisseur de niveau logique bidirectionnel 5V <=> 3.3V ([AliExpress](https://fr.aliexpress.com/item/1005006068381598.html))
 + Terminal 4 bornes ([AliExpress](https://fr.aliexpress.com/item/32828459901.html))
@@ -37,7 +37,7 @@ Connectique :
 
 Ici on alimente le tout via le 12V du Modbus.
 
-+ Convertisseur 12V => 5V ([AliExpress](https://fr.aliexpress.com/item/1005006486270630.html)) : penser à régler la sortie sur 5V avant de le brancher au reste !
++ Convertisseur 12V => 5V ([AliExpress](https://fr.aliexpress.com/item/1005006486270630.html)) ou ([Amazon](https://amzn.eu/d/aN7AZQ7)) : penser à régler la sortie sur 5V avant de le brancher au reste ! 
 
 ### Amélioration 2 : récupération de l'état des bouches de diffusion
 
@@ -58,21 +58,30 @@ Exemple de matériel :
 + Aqara température & humidité ([AliExpress](https://fr.aliexpress.com/item/1005002700355577.html))
 + Sonoff Zigbee 3.0 USB ([AliExpress](https://fr.aliexpress.com/item/1005006586489918.html))
 
-## Schéma
+## Schéma 4 bouches
 
 ![schema](schema.png)
 
 Les condensateurs U6 et U7 ne sont pas à mettre.
 
-## PCB
+
+## PCB 4 bouches
 
 ![pcb](pcb.png)
 
 Les condensateurs C1 et C2 ne sont pas à mettre.
 
-## Photo
+## Schéma basique sans les bouches
+![EasyEDA Esphome aldes Basic v1](https://github.com/user-attachments/assets/ac56486d-ffb9-4d2f-987d-ebf9aec33e0b)
 
+## PCB basique sans les bouches
+![PCB 3D EasyEDA Esphome aldes Basic v1](https://github.com/user-attachments/assets/286006b4-f7b4-4bc5-925d-30b12dc3e29e)
+
+## Photo PCB 4 bouches 
 ![esphome-aldes-tone-v1-0](esphome-aldes-tone-v1-0.jpg)
+
+## Photo PCB basique sans les bouches
+![photo PCB basic v1](https://github.com/user-attachments/assets/94a049aa-a4a4-422c-87e1-5fa1be53cbad)
 
 ## ESPHome
 
