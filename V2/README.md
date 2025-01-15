@@ -1,23 +1,23 @@
 # Passerelle ESPHome pour Aldes T.One® AIR
 
-**Attention :** cette page indépendente du fabricant présente des idées dont la mise en pratique nécessite des connaissances approfondies en chauffage, climatisation, électricité, électronique et informatique. Les risques sont nombreux et des erreurs graves figurent très probablement dans cette page. L'auteur se dégage de toute responsabilité liée à la mise en oeuvre de ce projet. N'utilisez pas ce projet, utilisez la passerelle officielle [AldesConnect® Box](https://www.aldes.fr/produits/mesure-regulation-et-connectivite/capteurs-et-connectivite/autres-capteurs/aldesconnect-box).
+## **Attention :** 
+cette page indépendente du fabricant présente des idées dont la mise en pratique nécessite des connaissances approfondies en chauffage, climatisation, électricité, électronique et informatique. Les risques sont nombreux et des erreurs graves figurent très probablement dans cette page. L'auteur se dégage de toute responsabilité liée à la mise en oeuvre de ce projet. N'utilisez pas ce projet, utilisez la passerelle officielle [AldesConnect® Box](https://www.aldes.fr/produits/mesure-regulation-et-connectivite/capteurs-et-connectivite/autres-capteurs/aldesconnect-box).
+
 
 **Note :** un énorme merci à la [communauté d'HACF](https://forum.hacf.fr/t/aldes-t-one-air-aquaair/42974) dans laquelle nous travaillons sur le sujet depuis plus de 2 ans !
 
 **Ce projet expérimental permet de piloter un système Aldes T.One® AIR via le réseau local et propose en particulier une intégration poussée dans HomeAssistant sous la forme d'entités Climate pour chaque thermostat.**
 
-![climate1](climate1.png)
+![climate1](/src/images/ha/thermostat%20séjour%20k1a-1.png)
 
-![climate2](climate2.png)
+![climate2](/src/images/ha/thermostat%20séjour%20k1a-2.png)
 
-![climate3](climate3.png)
+![climate3](/src/images/ha/thermostat%20séjour%20k1a-3.png)
+
 
 ## Matériel
 
 ### Base : pilotage Modbus
-
-test
-Dans cette configuration de base on alimente l'ESP32 par son port USB en le branchant sur le port USB du dessus normalement dédié à la box officielle.
 
 + PCB (récupérer le [fichier Gerber](gerber-v1.0.zip) ou le [projet EasyEDA](easyeda-v1-0.json) et le faire fabriquer sur un site comme JLCPCB.com)
 + D1 mini ESP32 ([AliExpress](https://fr.aliexpress.com/item/1005005972627549.html)) ou ([Amazon](https://amzn.eu/d/dTeepAy))
