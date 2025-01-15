@@ -32,14 +32,14 @@ Documentation [esphome](https://esphome.io/)
 ## Composants électroniques
 + D1 mini ESP32 ([AliExpress](https://fr.aliexpress.com/item/1005005972627549.html)) ou ([Amazon](https://amzn.eu/d/dTeepAy))
 + 2 x Convertisseur RS485/TTL ([AliExpress](https://fr.aliexpress.com/item/1005006340391490.html))
-+ Convertisseur de niveau logique bidirectionnel 5V <=> 3.3V ([AliExpress](https://fr.aliexpress.com/item/1005006068381598.html)) ou ([Amazon](https://amzn.eu/d/aiCa1Ww)
++ Convertisseur de niveau logique bidirectionnel 5V <=> 3.3V ([AliExpress](https://fr.aliexpress.com/item/1005006068381598.html)) ou ([Amazon](https://amzn.eu/d/aiCa1Ww))
 + Convertisseur 12V => 5V ([AliExpress](https://fr.aliexpress.com/item/1005006486270630.html)) ou ([Amazon](https://amzn.eu/d/aN7AZQ7)) : penser à régler la sortie sur 5V avant de le brancher au reste ! (multimétre)
 + Convertisseur numérique de niveaux logiques 12V => 3.3V à 4 voies ([AliExpress](https://fr.aliexpress.com/item/1005006419972546.html)) : Pour les bouches de diffusion
-+ 3 x Mini interrupteur 1P2T SPDT (> 2A) [AliExpress](https://a.aliexpress.com/_EyLZ1bw) ou [Amazon](https://amzn.eu/d/39LWGet)
-+ 3 x Jumper de connexion [AliExpress](https://a.aliexpress.com/_EQpgm7m)
++ 3 x Mini interrupteur 1P2T SPDT (> 2A) [AliExpress](https://a.aliexpress.com/_EyLZ1bw) ou ([Amazon](https://amzn.eu/d/39LWGet))
++ 3 x Jumper de connexion ([AliExpress](https://a.aliexpress.com/_EQpgm7m))
   
 ## Connectique :
-+ Câbles de connexion [Amazon](https://amzn.eu/d/2ajQLdu)
++ Câbles de connexion ([Amazon](https://amzn.eu/d/2ajQLdu))
 + 3 x Terminal 4 bornes ([AliExpress](https://fr.aliexpress.com/item/32828459901.html))
 + 6 x Terminal 2 bornes ([AliExpress](https://fr.aliexpress.com/item/32828459901.html))
 + Headers mâles ([AliExpress](https://fr.aliexpress.com/item/32973181162.html))
