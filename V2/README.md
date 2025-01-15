@@ -1,7 +1,7 @@
 # Passerelle ESPHome pour Aldes T.One® AIR
 
 ## **Disclaimer** 
-cette page indépendente du fabricant présente des idées dont la mise en pratique nécessite des connaissances approfondies en chauffage, climatisation, électricité, électronique et informatique. Les risques sont nombreux et des erreurs graves figurent très probablement dans cette page. L'auteur se dégage de toute responsabilité liée à la mise en oeuvre de ce projet. N'utilisez pas ce projet, utilisez la passerelle officielle [AldesConnect® Box](https://www.aldes.fr/produits/mesure-regulation-et-connectivite/capteurs-et-connectivite/autres-capteurs/aldesconnect-box).
+Cette page indépendente du fabricant présente des idées dont la mise en pratique nécessite des connaissances approfondies en chauffage, climatisation, électricité, électronique et informatique. Les risques sont nombreux et des erreurs graves figurent très probablement dans cette page. L'auteur se dégage de toute responsabilité liée à la mise en oeuvre de ce projet. N'utilisez pas ce projet, utilisez la passerelle officielle [AldesConnect® Box](https://www.aldes.fr/produits/mesure-regulation-et-connectivite/capteurs-et-connectivite/autres-capteurs/aldesconnect-box).
 
 **Il est fortement conseillé de travailler hors tension.**
 
@@ -54,8 +54,19 @@ Documentation [esphome](https://esphome.io/)
 + Multimétre
 
 ## Explication
-TODO
-Les terminaux "K" sont à relier aux terminaux correspondants sur la carte mère de la PAC, où sont déjà branchés les câbles menant aux bouches. Attention, la polarité n'est pas importante pour les vérins des bouches selon la documentation officielle, mais elle est importante ici. Assurez-vous d'obtenir +12V au niveau du terminal quand la bouche est ouverte, et pas -12V !
++  Le terminal 4 bornes (Modbus 1 IN du PCB) doit être connecté au port modbus de la carte mère
+
+![carte mère](/V2/src/images/pac/modbus_carte_mère.png).
+
++  Le terminal 4 bornes (Modbus remote IN (option) du PCB) doit être connecté au port remote de la carte mère via le cable de la commande centrale.  Donc à déconnecter de la commande centrale.
+
+![commande centrale](/V2/src/images/pac/remote.png).
+
++  Le terminal 4 bornes (Remote OUT du PCB) doit être connecté à la commande centrale pour pouvoir l'allumer simplement avec les switches ou les jumpers sans tout démonter. Par defaut la commande centrale reste eteint
+
+Attention, si les switches sont vers le bas (ou les jumpers), les températures des pièces ne serons plus remontés dans ESPHome, il ne peut y avoir qu’un maître en modbus, soit l’esp soit la commande centrale, sinon il y a conflit.
+
+Les terminaux 2 bornes "K*" sont à relier aux terminaux correspondants sur la carte mère de la PAC, où sont déjà branchés les câbles menant aux bouches. Attention, la polarité n'est pas importante pour les vérins des bouches selon la documentation officielle, mais elle est importante ici. Assurez-vous d'obtenir +12V au niveau du terminal quand la bouche est ouverte, et pas -12V !
 
 ## Schéma EasyEAD
 ![schema](/V2/src/images/EasyEAD/schéma_elec.png)
