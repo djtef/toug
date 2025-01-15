@@ -3,6 +3,8 @@
 ## **Disclaimer** 
 cette page indépendente du fabricant présente des idées dont la mise en pratique nécessite des connaissances approfondies en chauffage, climatisation, électricité, électronique et informatique. Les risques sont nombreux et des erreurs graves figurent très probablement dans cette page. L'auteur se dégage de toute responsabilité liée à la mise en oeuvre de ce projet. N'utilisez pas ce projet, utilisez la passerelle officielle [AldesConnect® Box](https://www.aldes.fr/produits/mesure-regulation-et-connectivite/capteurs-et-connectivite/autres-capteurs/aldesconnect-box).
 
+**Il est fortement conseillé de travailler hors tension.**
+
 Documentation [esphome](https://esphome.io/)
 
 **Note :** un énorme merci à la [communauté d'HACF](https://forum.hacf.fr/t/aldes-t-one-air-aquaair/42974) dans laquelle nous travaillons sur le sujet depuis plus de 2 ans !
@@ -21,10 +23,11 @@ Documentation [esphome](https://esphome.io/)
 
 ![climate3](/V2/src/images/ha/thermostat%20séjour%20k1a-3.png)
 
+
 ## PCB
 + PCB (récupérer le [fichier Gerber Switch](/V2/src/PCB/EasyEAD/Gerber_ESPHome-Aldes-T.One-advanced_switch.zip) ou [fichier Gerber Jumper](/V2/src/PCB/EasyEAD/Gerber_ESPHome-Aldes-T.One-advanced_jumper.zip) et le faire fabriquer sur un site comme JLCPCB.com)
 + Pour le PCB sans les bouches, récupérer le [fichier Gerber Basic](Gerber_ESPHome-Aldes-T.One-Basic-v1.0_PCB_ESPHome-Aldes_2024-12-31.zip)  ou le [projet EasyEAD](SCH_ESPHome-Aldes-T.One-Basic-v1.0_2024-12-31.json)
-+ Kit soudure [Amazon](https://amzn.eu/d/3sIApjg) ou autre
+
 
 ## Composants électroniques
 + D1 mini ESP32 ([AliExpress](https://fr.aliexpress.com/item/1005005972627549.html)) ou ([Amazon](https://amzn.eu/d/dTeepAy))
@@ -41,15 +44,20 @@ Documentation [esphome](https://esphome.io/)
 + 6 x Terminal 2 bornes ([AliExpress](https://fr.aliexpress.com/item/32828459901.html))
 + Headers mâles ([AliExpress](https://fr.aliexpress.com/item/32973181162.html))
 + Pince à sertir et embouts ([AliExpress](https://fr.aliexpress.com/item/32831768783.html)) ou [Amazon](https://amzn.eu/d/3J0eNm9)
-+ Facultatif : headers femelle doubles (2) pour l'ESP32 ([AliExpress](https://fr.aliexpress.com/item/32747224548.html))
-+ Falcutatif : headers femelle simples pour les autres circuits ([AliExpress](https://fr.aliexpress.com/item/32854239374.html))
++ Headers femelle doubles (2) pour l'ESP32 ([AliExpress](https://fr.aliexpress.com/item/32747224548.html))
++ Headers femelle simples pour les autres circuits ([AliExpress](https://fr.aliexpress.com/item/32854239374.html))
++ Headers mâle et femelle pour les autres circuits ([AliExpress](https://fr.aliexpress.com/item/1005007235591794.html)
 + Embouts doubles ([AliExpress](https://fr.aliexpress.com/item/1005004846852618.html))
 
+## Autre
++ Kit fer à souder
++ Multimétre
 
+## Explication
+TODO
 Les terminaux "K" sont à relier aux terminaux correspondants sur la carte mère de la PAC, où sont déjà branchés les câbles menant aux bouches. Attention, la polarité n'est pas importante pour les vérins des bouches selon la documentation officielle, mais elle est importante ici. Assurez-vous d'obtenir +12V au niveau du terminal quand la bouche est ouverte, et pas -12V !
 
 ## Schéma EasyEAD
-
 ![schema](/V2/src/images/EasyEAD/schéma_elec.png)
 
 ## PCB
