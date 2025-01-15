@@ -56,11 +56,11 @@ Documentation [esphome](https://esphome.io/)
 ## Explication
 +  Le terminal 4 bornes (Modbus 1 IN du PCB) doit être connecté au port modbus de la carte mère
 
-![carte mère](/V2/src/images/pac/modbus_carte_mère.png).
+![carte mère](/V2/src/images/PAC/modbus_carte_mere.png).
 
 +  Le terminal 4 bornes (Modbus remote IN (option) du PCB) doit être connecté au port remote de la carte mère via le cable de la commande centrale.  Donc à déconnecter de la commande centrale.
 
-![commande centrale](/V2/src/images/pac/remote.png).
+![commande centrale](/V2/src/images/PAC/remote.png).
 
 +  Le terminal 4 bornes (Remote OUT du PCB) doit être connecté à la commande centrale pour pouvoir l'allumer simplement avec les switches ou les jumpers sans tout démonter. Par defaut la commande centrale reste eteint
 
@@ -95,3 +95,4 @@ Configuration yaml [ICI](/V2/src/yaml/Home%20assistant/climate_v1.yaml)
 Installer [hass-template-climate](https://github.com/jcwillox/hass-template-climate)
 
 ## Impression 3D
+TODO
