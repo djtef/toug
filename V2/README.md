@@ -1,6 +1,6 @@
 # Passerelle ESPHome pour Aldes T.One® AIR
 
-## **Attention :** 
+## **Disclaimer** 
 cette page indépendente du fabricant présente des idées dont la mise en pratique nécessite des connaissances approfondies en chauffage, climatisation, électricité, électronique et informatique. Les risques sont nombreux et des erreurs graves figurent très probablement dans cette page. L'auteur se dégage de toute responsabilité liée à la mise en oeuvre de ce projet. N'utilisez pas ce projet, utilisez la passerelle officielle [AldesConnect® Box](https://www.aldes.fr/produits/mesure-regulation-et-connectivite/capteurs-et-connectivite/autres-capteurs/aldesconnect-box).
 
 Documentation [esphome](https://esphome.io/)
@@ -9,11 +9,11 @@ Documentation [esphome](https://esphome.io/)
 
 ## Objectif
 **Ce projet expérimental permet de piloter un système Aldes T.One® AIR via le réseau local et propose en particulier une intégration poussée dans HomeAssistant sous la forme d'entités Climate pour chaque thermostat.**
-### fonctionnalité principales:
+### Fonctionnalité principales:
 +  Afficher et modifier les températures de consignes de l'ensemble des thermostats
 +  Afficher les tempérratures des piéces
 +  Connaitre l'état (ouvert/fermé) des bouches de diffusion ( 6 max )
-+  Création d'entité Climate dans Home assistant
++  Création d'entités Climate dans Home Assistant regroupant l'ensemble des entités ESPHome
 
 ![climate1](/V2/src/images/ha/thermostat%20séjour%20k1a-1.png)
 
@@ -54,11 +54,16 @@ Les terminaux "K" sont à relier aux terminaux correspondants sur la carte mère
 
 ## PCB
 Coté composant:
+
 ![Coté composant](/V2/src/images/EasyEAD/PCB_composant.png)
 
 Coté cuivre:
+
 ![Coté cuivre](/V2/src/images/EasyEAD/PCB_cuivre.png)
 
+3D:
+
+![3D](/V2/src/images/EasyEAD/PCB_3D.png)
 
 ## ESPHome
 configuration yaml [ICI](/V2/src/yaml/ESPHome/esphome_v1.yaml)
@@ -66,7 +71,8 @@ configuration yaml [ICI](/V2/src/yaml/ESPHome/esphome_v1.yaml)
 **Note :** [Pour l'AquaAir, Modbus permet d'autres choses](https://forum.hacf.fr/t/aldes-t-one-air-aquaair/42974/171)
 
 ## Home Assistant
-Configuration [ICI](/V2/src/yaml/Home assistant/climate_v1.yaml)
+Configuration yaml [ICI](/V2/src/yaml/Home%20assistant/climate_v1.yaml)
 
 Installer [hass-template-climate](https://github.com/jcwillox/hass-template-climate)
 
+## Impression 3D
