@@ -12,6 +12,9 @@ esp32:
 # Enable logging
 logger:
 
+web_server:
+  port: 80
+  
 # It is highly recommended to use secrets
 wifi:
   ssid: !secret wifi_ssid
@@ -26,7 +29,7 @@ api:
 ota:
 - platform: esphome
 
-# Deux connexion Modbus: La carte mère et la commande centrale (Remote)  
+# Deux connexions Modbus: La carte mère et la commande centrale (Remote)  
 uart:
   - id: uart_motherboard
     baud_rate: 19200
@@ -54,7 +57,13 @@ modbus_controller:
     modbus_id: modbus_central_command
     address: 0x1
 
-
+# Reboot button 
+button:
+  - platform: restart
+    name: "Reboot ESPHome Aldes"
+    icon: mdi:power
+    entity_category: diagnostic
+    
 #######################################################################################
 #                    Sélection des modes de la PAC                                    #
 #            (Ajustez à votre maison, avec clim ou sans clim)                         #
@@ -80,23 +89,11 @@ select:
       "Programme climatisation C": 7 
       "Programme climatisation D": 8 
 
-sensor:
-# Temperature principale via ModBus carte mère
-  - platform: modbus_controller
-    modbus_controller_id: motherboard
-    name: "Sejour temperature principale "
-    device_class: "temperature"
-    state_class: "measurement"
-    register_type: holding
-    address: 0x0078
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
+
 ####################################################################################### 
 #               Temperature des pièces via ModBus de la commande centrale             #
 #######################################################################################
+sensor:
   - platform: modbus_controller
     modbus_controller_id: central_command
     name: "sejour temperature K1a"              # à adapter
@@ -223,7 +220,22 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
-      
+
+# Temperature principale via ModBus carte mère
+  - platform: modbus_controller
+    modbus_controller_id: motherboard
+    disabled_by_default: true                  # à adapter
+    name: "Sejour temperature principale "
+    device_class: "temperature"
+    state_class: "measurement"
+    register_type: holding
+    address: 0x0078
+    value_type: S_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     name: "Version logiciel"
@@ -274,7 +286,7 @@ sensor:
       }
 
 #######################################################################################
-#             Ensemble des température de consignes des thermostats                   #
+#             Ensemble des températures de consigne des thermostats                   #
 #                       (Ajustez à votre maison)                                      #
 #######################################################################################
 number:
@@ -286,10 +298,10 @@ number:
     address: 0x96
     value_type: U_WORD
     min_value: 0
-    #max_value: !lambda "return id(max_temp_mode).state;"  # Utilisation de la valeur dynamique
-    max_value: 24
+    max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     name: "Chambre d'amis Thermostat K2"
@@ -301,6 +313,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     name: "Chambre vide Thermostat K3"
@@ -312,6 +325,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     name: "Palier Thermostat K4"
@@ -323,6 +337,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     name: "Chambre à coucher Thermostat K5"
@@ -334,6 +349,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+    
   - platform: modbus_controller
     modbus_controller_id: motherboard
     name: "Bureau Thermostat K6"
@@ -346,6 +362,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     disabled_by_default: true           # à adapter
@@ -358,6 +375,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     disabled_by_default: true           # à adapter 
@@ -370,6 +388,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     disabled_by_default: true       # à adapter
@@ -382,6 +401,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller 
     modbus_controller_id: motherboard
     name: "Thermostat K1b"
@@ -394,6 +414,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     disabled_by_default: true           # à adapter
@@ -409,6 +430,7 @@ number:
     use_write_multiple: true
     multiply: 1000
     step: 0.001
+
   - platform: modbus_controller
     modbus_controller_id: motherboard
     disabled_by_default: true           # à adapter
@@ -425,7 +447,6 @@ number:
     multiply: 1000
     step: 0.001
 
-
 binary_sensor:
   - platform: modbus_controller
     modbus_controller_id: motherboard
@@ -437,7 +458,7 @@ binary_sensor:
     address: 0x0082
 
 ########################################################################################
-##        Avec amélioration 2, retour d'état des plénum de diffusion                   #
+##        Retour d'état des plénums de diffusion                                       #
 ########################################################################################
   - platform: gpio # bouche K1a
     name: "Sejour bouche K1a"
