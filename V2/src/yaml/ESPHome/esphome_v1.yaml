@@ -270,21 +270,6 @@ sensor:
     register_type: holding
     address: 0x007A
 
-  - platform: template
-    name: "Max Temp Mode"
-    id: max_temp_mode
-    update_interval: 50s
-    unit_of_measurement: "°C"
-    lambda: |-
-      if (id(esp32_mode_air).state == "off") {
-        return 24.0; // Default max temperature for off
-      } else if (id(esp32_mode_air).state == "heat" || id(esp32_mode_air).state == "Chauffage économique" || 
-                 id(esp32_mode_air).state == "Programme chauffage A" || id(esp32_mode_air).state == "Programme chauffage B") {
-        return 24.0; // Max temperature for heating modes
-      } else {
-        return 31.0; // Max temperature for cooling modes
-      }
-
 #######################################################################################
 #             Ensemble des températures de consigne des thermostats                   #
 #                       (Ajustez à votre maison)                                      #
@@ -304,7 +289,7 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    name: "Chambre d'amis Thermostat K2"
+    name: "Chambre d'amis Thermostat K2"                  # à adapter
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x98
@@ -316,7 +301,7 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    name: "Chambre vide Thermostat K3"
+    name: "Chambre vide Thermostat K3"                  # à adapter
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x99
@@ -328,7 +313,7 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    name: "Palier Thermostat K4"
+    name: "Palier Thermostat K4"                  # à adapter
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x9A
@@ -340,7 +325,7 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    name: "Chambre à coucher Thermostat K5"
+    name: "Chambre à coucher Thermostat K5"                  # à adapter
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x9B
@@ -352,8 +337,7 @@ number:
     
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    name: "Bureau Thermostat K6"
-    id: "esp32_climate_bureau_k6"
+    name: "Bureau Thermostat K6"                  # à adapter
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x9C
@@ -365,8 +349,8 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    disabled_by_default: true           # à adapter
-    name: "Thermostat K7"
+    disabled_by_default: true                   # à adapter
+    name: "Thermostat K7"                       # à adapter
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x9D
@@ -378,8 +362,8 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    disabled_by_default: true           # à adapter 
-    name: "Thermostat K8"           
+    disabled_by_default: true              # à adapter 
+    name: "Thermostat K8"                  # à adapter           
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x9E
@@ -391,8 +375,8 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    disabled_by_default: true       # à adapter
-    name: "Thermostat K9"
+    disabled_by_default: true              # à adapter
+    name: "Thermostat K9"                  # à adapter     
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x9F
@@ -404,8 +388,8 @@ number:
 
   - platform: modbus_controller 
     modbus_controller_id: motherboard
-    name: "Thermostat K1b"
-    disabled_by_default: true           # à adapter    
+    name: "Thermostat K1b"                   # à adapter            
+    disabled_by_default: true                # à adapter    
     icon: "mdi:thermostat"
     unit_of_measurement: "°C"
     address: 0x97
@@ -417,7 +401,7 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    disabled_by_default: true           # à adapter
+    disabled_by_default: true                # à adapter
     name: "Tarif HP"
     icon: mdi:currency-eur
     entity_category: config
@@ -433,7 +417,7 @@ number:
 
   - platform: modbus_controller
     modbus_controller_id: motherboard
-    disabled_by_default: true           # à adapter
+    disabled_by_default: true              # à adapter
     name: "Tarif HC"
     icon: mdi:currency-eur
     entity_category: config
@@ -473,7 +457,7 @@ binary_sensor:
       - delayed_off: 50000ms
 
   - platform: gpio # bouche K2
-    name: "Chambre d'amis bouche K2"
+    name: "Chambre d'amis bouche K2"            # à adapter      
     disabled_by_default: false                  # à adapter
     device_class: opening
     icon: "mdi:hvac"
@@ -485,7 +469,7 @@ binary_sensor:
       - delayed_off: 50000ms
 
   - platform: gpio # bouche K3
-    name: "Chambre vide bouche K3"
+    name: "Chambre vide bouche K3"              # à adapter
     disabled_by_default: false                  # à adapter
     device_class: opening
     icon: "mdi:hvac"
@@ -497,7 +481,7 @@ binary_sensor:
       - delayed_off: 50000ms
 
   - platform: gpio # bouche K4
-    name: "Palier bouche  K4"
+    name: "Palier bouche  K4"                   # à adapter
     disabled_by_default: false                  # à adapter
     device_class: opening
     icon: "mdi:hvac"
@@ -509,8 +493,8 @@ binary_sensor:
       - delayed_off: 50000ms
 
   - platform: gpio # bouche K5
-    name: "Chambre à coucher bouche K5"
-    disabled_by_default: false                  # à adapter
+    name: "Chambre à coucher bouche K5"          # à adapter
+    disabled_by_default: false                   # à adapter
     device_class: opening
     icon: "mdi:hvac"
     pin:
@@ -521,7 +505,7 @@ binary_sensor:
       - delayed_off: 50000ms
 
   - platform: gpio # bouche K6
-    name: "Bureau bouche K6"
+    name: "Bureau bouche K6"                    # à adapter
     disabled_by_default: false                  # à adapter
     device_class: opening
     icon: "mdi:hvac"
@@ -536,7 +520,7 @@ binary_sensor:
 # commentez le premier élément "Bouche K1a" et décommentez les lignes suivantes.
 #  - platform: gpio # bouche K1b
 #    disabled_by_default: true           # à adapter 
-#    name: "Bouche K1b"
+#    name: "Bouche K1b"                  # à adapter  
 #    device_class: opening
 #    icon: "mdi:hvac"
 #    pin:
