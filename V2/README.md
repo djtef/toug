@@ -54,19 +54,19 @@ Documentation [esphome](https://esphome.io/)
 + Multimétre
 
 ## Explication
-+  Le terminal 4 bornes (Modbus 1 IN du PCB) doit être connecté au port modbus de la carte mère
++  Le terminal à 4 bornes ("Modbus 1 IN" du PCB) doit être connecté au port modbus de la carte mère
 
 ![carte mère](/V2/src/images/PAC/modbus_carte_mere.png).
 
-+  Le terminal 4 bornes (Modbus remote IN (option) du PCB) doit être connecté au port remote de la carte mère via le cable de la commande centrale.  Donc à déconnecter de la commande centrale.
++  Le terminal à 4 bornes ("Modbus Remote IN (option)" du PCB) doit être connecté au port "Remote" de la carte mère via le câble de la commande centrale, et donc déconnecté de la commande centrale.
 
 ![commande centrale](/V2/src/images/PAC/remote.png).
 
-+  Le terminal 4 bornes (Remote OUT du PCB) doit être connecté à la commande centrale pour pouvoir l'allumer simplement avec les switches ou les jumpers sans tout démonter. Par defaut la commande centrale reste eteint
++  Le terminal à 4 bornes ("Remote OUT" du PCB) doit être connecté à la commande centrale pour permettre son allumage simplement à l'aide des switches ou des jumpers, sans nécessiter de démontage. Par défaut, la commande centrale reste éteinte.
 
-Attention, si les switches sont vers le bas (ou les jumpers), les températures des pièces ne serons plus remontés dans ESPHome, il ne peut y avoir qu’un maître en modbus, soit l’esp soit la commande centrale, sinon il y a conflit.
++ Si les switches sont en position basse (ou les jumpers), les températures des pièces ne seront plus remontées dans ESPHome et Home Assistant. Il ne peut y avoir qu’un seul maître en Modbus, soit l’ESP, soit la commande centrale, sinon cela entraîne un conflit.
 
-Les terminaux 2 bornes "K*" sont à relier aux terminaux correspondants sur la carte mère de la PAC, où sont déjà branchés les câbles menant aux bouches. Attention, la polarité n'est pas importante pour les vérins des bouches selon la documentation officielle, mais elle est importante ici. Assurez-vous d'obtenir +12V au niveau du terminal quand la bouche est ouverte, et pas -12V !
+Les terminaux à 2 bornes "K*" sont à relier aux terminaux correspondants sur la carte mère de la PAC, où sont déjà branchés les câbles menant aux bouches. Attention, la polarité n'est pas importante pour les vérins des bouches selon la documentation officielle, mais elle est importante ici. Assurez-vous d'obtenir +12V au niveau du terminal quand la bouche est ouverte, et pas -12V !
 
 ## Schéma EasyEAD
 ![schema](/V2/src/images/EasyEAD/schéma_elec.png)
