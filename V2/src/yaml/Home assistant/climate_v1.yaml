@@ -2,6 +2,7 @@ climate:
   - platform: climate_template
     name: Séjour k1a
     unique_id: sejour_k1a_template
+    icon_template: mdi:home-thermometer
     availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
     modes:
       - "heat"
@@ -68,6 +69,7 @@ climate:
   - platform: climate_template
     name: Chambre d'amis k2
     unique_id: chambre_d_amis_k2_template
+    icon_template: mdi:home-thermometer
     availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
     modes:
       - "heat"
@@ -134,6 +136,7 @@ climate:
   - platform: climate_template
     name: Chambre vide k3
     unique_id: chambre_vide_k3_template
+    icon_template: mdi:home-thermometer
     availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
     modes:
       - "heat"
@@ -200,6 +203,7 @@ climate:
   - platform: climate_template
     name: Palier k4
     unique_id: palier_k4_template
+    icon_template: mdi:home-thermometer
     availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
     modes:
       - "heat"
@@ -266,6 +270,7 @@ climate:
   - platform: climate_template
     name: Chambre a coucher k5
     unique_id: Chambre_a_coucher_k5_template
+    icon_template: mdi:home-thermometer
     availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
     modes:
       - "heat"
@@ -332,6 +337,7 @@ climate:
   - platform: climate_template
     name: Bureau k6
     unique_id: bureau_k6_template
+    icon_template: mdi:home-thermometer
     availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
     modes:
       - "heat"
