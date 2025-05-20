@@ -1,404 +1,185 @@
-# Passerelle ESPHome pour Aldes T.One® AIR
+# T.One Ultimate Gateway (TOUG) : Passerelle ESPHome pour Aldes T.One® AIR/AquaAIR
 
 **Attention :** cette page indépendente du fabricant présente des idées dont la mise en pratique nécessite des connaissances approfondies en chauffage, climatisation, électricité, électronique et informatique. Les risques sont nombreux et des erreurs graves figurent très probablement dans cette page. L'auteur se dégage de toute responsabilité liée à la mise en oeuvre de ce projet. N'utilisez pas ce projet, utilisez la passerelle officielle [AldesConnect® Box](https://www.aldes.fr/produits/mesure-regulation-et-connectivite/capteurs-et-connectivite/autres-capteurs/aldesconnect-box).
 
 **Note :** un énorme merci à la [communauté d'HACF](https://forum.hacf.fr/t/aldes-t-one-air-aquaair/42974) dans laquelle nous travaillons sur le sujet depuis plus de 2 ans !
 
-**Ce projet expérimental permet de piloter un système Aldes T.One® AIR via le réseau local et propose en particulier une intégration poussée dans HomeAssistant sous la forme d'entités Climate pour chaque thermostat.**
+# Pilotage local d'une PAC Aldes T.One Aqua Air avec ESPHome + Home Assistant (sans cloud)
 
-![climate1](climate1.png)
+&#x20;&#x20;
 
-![climate2](climate2.png)
+> Contrôlez votre pompe à chaleur *Aldes T.One® AIR/AquaAIR** entièrement en local via un **WT32‑ETH01** (ESP32 + Ethernet) et profitez d’une intégration immédiate dans **Home Assistant** – sans cloud ni passerelle propriétaire.
 
-![climate3](climate3.png)
+---
 
-## Matériel
+## Table des matières
 
-### Base : pilotage Modbus
+1. [Fonctionnalités](#fonctionnalités)
+2. [Matériel requis](#matériel-requis)
+3. [Schéma de principe](#schéma-de-principe)
+4. [Installation](#installation)
+5. [Intégration Home Assistant](#intégration-home-assistant)
+6. [Roadmap](#roadmap)
+7. [License](#license)
 
-Dans cette configuration de base on alimente l'ESP32 par son port USB en le branchant sur le port USB du dessus normalement dédié à la box officielle.
+---
 
-+ PCB (récupérer le [fichier Gerber](gerber-v1.0.zip) ou le [projet EasyEDA](easyeda-v1-0.json) et le faire fabriquer sur un site comme JLCPCB.com)
-+ D1 mini ESP32 ([AliExpress](https://fr.aliexpress.com/item/1005005972627549.html)) ou ([Amazon](https://amzn.eu/d/dTeepAy))
-+ Convertisseur RS485/TTL ([AliExpress](https://fr.aliexpress.com/item/1005006340391490.html))
-+ Convertisseur de niveau logique bidirectionnel 5V <=> 3.3V ([AliExpress](https://fr.aliexpress.com/item/1005006068381598.html))
-+ Terminal 4 bornes ([AliExpress](https://fr.aliexpress.com/item/32828459901.html))
+## Fonctionnalités
 
-Pour le PCB sans les bouches, récupérer le [fichier Gerber Basic](Gerber_ESPHome-Aldes-T.One-Basic-v1.0_PCB_ESPHome-Aldes_2024-12-31.zip)  ou le [projet EasyEAD](SCH_ESPHome-Aldes-T.One-Basic-v1.0_2024-12-31.json)
+### Communications supportées
 
-Connectique :
+* **Modbus utilisateur** (UART) : lecture des registres usuels (modes chauffage/ECS, thermostats, filtres, etc.).
+* **Modbus écran central** (UART secondaire) : accès à des registres avancés normalement invisibles (températures des pièces, pressions du gaz, débits, etc.)
+* **Interface série passerelle Aldes** (USB) : reverse‑engineering en cours pour remplacer la passerelle officielle AldesConnect® Box via l'USB
+* **Extension I2C** : permet l'ajout de fonctionnalités via le bus I2C
 
-+ Headers mâles ([AliExpress](https://fr.aliexpress.com/item/32973181162.html))
-+ Pince à sertir et embouts ([AliExpress](https://fr.aliexpress.com/item/32831768783.html))
-+ Facultatif : headers femelle doubles (2) pour l'ESP32 ([AliExpress](https://fr.aliexpress.com/item/32747224548.html))
-+ Falcutatif : headers femelle simples pour les autres circuits ([AliExpress](https://fr.aliexpress.com/item/32854239374.html))
+### Surveillance & commandes
 
-### Amélioration 1 : alimentation par le Modbus
+* Suivi de l’**ouverture jusqu'à 6 bouches de ventilation**.
+* Détection de la **demande de résistance d’appoint** (AquaAIR seulement)
+* Lecture des sondes **ECS haut & bas** (NTC 10 kΩ) (AquaAIR seulement)
+* **Simulation** d’une température ECS de **60 °C** pour éviter l’erreur température trop haute lorsque l’eau est chauffée par un routeur solaire DIY (AquaAIR seulement) /!\ Voir ci-après
 
-Ici on alimente le tout via le 12V du Modbus.
+### Alimentation
 
-+ Convertisseur 12V => 5V ([AliExpress](https://fr.aliexpress.com/item/1005006486270630.html)) ou ([Amazon](https://amzn.eu/d/aN7AZQ7)) : penser à régler la sortie sur 5V avant de le brancher au reste ! 
+* **Port USB** de la passerelle AldesConnect® Box
+* **Modbus utilisateur** : conversion du 12V du connecteur modbus utilisateur
+* **Modbus écran central** (télécommande) : conversion du 12V du connecteur modbus télécommande
+* **5V externe** : via une alimentation séparée
 
-### Amélioration 2 : récupération de l'état des bouches de diffusion
+### Configurations
 
-Avec ces ajouts, on peut savoir si les bouches de diffusion (4 maximum avec ce PCB) sont ouvertes ou fermées, ce qui permet de savoir si la PAC est active ou pas et pour quelle pièce.
+* **Switch ON/OFF** en façade
+* **Switch Flash Mode** en façade avec connecteur FTDI
+* **Choix de l'UART** 1 à 3 ou désactivation du port USB via interrupteur à glissière 4 positions
+* **Choix de l'alimentation** via jumpers
+* **Activation/Désactivation** de la lecture de l'écran central via interrupteur à glissière
+* **Activation/Désactivation** de la simulation des températures ECS haut et bas via interrupteur à glissière (AquaAIR seulement)
+* **Détection résistance d'appoint** avec pullup ou pulldown via jumper
 
-+ Convertisseur numérique de niveaux logiques 12V => 3.3V à 4 voies ([AliExpress](https://fr.aliexpress.com/item/1005003772569293.html))
-+ Terminal 2 bornes * 4 ([AliExpress](https://fr.aliexpress.com/item/32828459901.html))
-+ Embouts doubles ([AliExpress](https://fr.aliexpress.com/item/1005004846852618.html))
+### Connectique
 
-Les terminaux K sont à relier aux terminaux correspondants sur la carte mère de la PAC, où sont déjà branchés les câbles menant aux bouches. Attention, la polarité n'est pas importante pour les vérins des bouches selon la documentation officielle, mais elle est importante ici. Assurez-vous d'obtenir +12V au niveau du terminal quand la bouche est ouverte, et pas -12V !
+* **Borniers à vis débrochables 2.54mm** pour les bouches de ventilation et résistance d'apoint
+* **Borniers à vis débrochables 5.08mm** pour alimentations externes 5V et 3.3V
+* **Connecteur femelle JST XAP-04V** pour brancher directement la télécommande
+* **Connecteur femelle JST XAP-06V** pour brancher directement les sondes ECS haut et bas (AquaAIR seulement)
+* **Connecteurs femelles JST XH 2.54** pour liaisons vers carte mère (sondes et modbus) et bus I2C
+* **Port Ethernet** RJ45
 
-### Amélioration 3 : récupération des températures réelles et des humidités
+### Boitier
 
-En ajoutant un capteur à proximité de chaque thermostat, nous récupérons la température et l'humidité réelle dans chaque pièce.
+* Boitier générique au format **rail DIN**
+* **Ouverture et fermeture** via clips
+* **Fixation** de la carte par vis
+---
 
-Exemple de matériel :
+## Matériel requis
 
-+ Aqara température & humidité ([AliExpress](https://fr.aliexpress.com/item/1005002700355577.html))
-+ Sonoff Zigbee 3.0 USB ([AliExpress](https://fr.aliexpress.com/item/1005006586489918.html))
+| Quantité | Composant                  | Rôle                                                      |
+| -------- | -------------------------- | --------------------------------------------------------- |
+| 1        | **WT32‑ETH01**             | ESP32 + Ethernet                                          |
+| 2        | **TTL to RS485**           | Convertisseur RS485/TTL                                   |
+| 1        | **Level shifter**          |Convertisseur de niveau logique bidirectionnel 5V <=> 3.3V |
+| 1        | **Step-Down Power Module** | Convertisseur 12V => 5V (régler la sortie au multimètre sur 5V avant de le brancher au reste)|
+| 2        | **Logic Level Converter PNP Output**  | Convertisseur numérique de niveaux logiques 12V => 3.3V à 4 voies|
+| 1        | **ADS1115**                | Convertisseur Analogique-Numérique 4 voies                |
+| 1        | **MCP2221-I/SL**           | Convertisseur USB/TTL CDC                                 |
+| 1        | **4.7 µF**                 | Condensateur VDD MCP2221                                  |
+| 1        | **0.47 µF**                | Condensateur VUSB MCP2221                                 |
+| 1        | **10 µF**                  | Condensateur alimentation 5V                              |
+| 1        | **100 nF**                 | Condensateur découplage 5V                                |
+| 3        | **4.7 kΩ**                 | Résistances pull up                                       |
+| 2        | **SK-12D02-VG7**           | Interrupteurs à glissière en façade                       |
+| 2        | **KH-SS42D02-G3**          | Interrupteurs à glissière 4PDT                            |
+| 1        | **SS-24H03-G070**          | Interrupteurs à glissière DP4T                            |
+| 1        | **Port USB**               | Port USB 4 pins                                           |
+| 1        | **KF2EDGR-2.54-8P**        | Bornier à vis débrochable 8 pins 2.54mm                   |
+| 1        | **KF2EDGR-2.54-2P**        | Bornier à vis débrochable 2 pins 2.54mm                   |
+| 2        | **KF2EDGR-5.08-2P**        | Bornier à vis débrochable 2 pins 5.08mm                   |
+| 1        | **S06B-XASK-1(LF)(SN)**    | Connecteur JST XASK femelle 6 pins sondes température     |
+| 1        | **S04B-XASK-1(LF)(SN)**    | Connecteur JST XASK femelle 4 pins télécommande           |
+| 1        | **KF2EDGR-2.54-8P**        | Bornier à vis débrochable 8 pins 2.54mm                   |
+| 4        | **JST XH2.54 4P**          | Connecteur JST XH 4 pins 2.54mm                           |
+| 5        | **Pin header 3P**          | Pin Header 3 pins 2.54mm                                  |
+| 5        | **Jumper**                 | Jumpers                                                   |
 
-## Schéma 4 bouches
+> 📋 **Astuce** : Avec un WT32‑ETH01, vous bénéficiez d’un port RJ45 natif – idéal pour une communication fiable dans une chaufferie blindée.
 
-![schema](schema.png)
+---
 
-Les condensateurs U6 et U7 ne sont pas à mettre.
+## Schéma de principe
 
+```
+WT32‑ETH01
+├── UART1 ──────► Modbus utilisateur (PAC)
+├── UART2 ──────► Modbus écran central (PAC)
+├── USB‑Serial ─► USB passerelle Aldes (en analyse)
+├── Sortie GPIO ─► Simulation 60°
+├── Entrées GPIO ◄─ 6 bouches de ventilation
+├── Entrée GPIO ◄── Demande résistance d’appoint  
+├── ADC1 ◄───────── Sonde ECS haut (NTC)
+├── ADC1 ◄───────── Sonde ECS bas (NTC)
 
-## PCB 4 bouches
-
-![pcb](pcb.png)
-
-Les condensateurs C1 et C2 ne sont pas à mettre.
-
-## Schéma basique sans les bouches
-![EasyEDA Esphome aldes Basic v1](https://github.com/user-attachments/assets/ac56486d-ffb9-4d2f-987d-ebf9aec33e0b)
-
-## PCB basique sans les bouches
-![PCB 3D EasyEDA Esphome aldes Basic v1](https://github.com/user-attachments/assets/286006b4-f7b4-4bc5-925d-30b12dc3e29e)
-
-## Photo PCB 4 bouches 
-![esphome-aldes-tone-v1-0](esphome-aldes-tone-v1-0.jpg)
-
-## Photo PCB basique sans les bouches
-![photo PCB basic v1](https://github.com/user-attachments/assets/94a049aa-a4a4-422c-87e1-5fa1be53cbad)
-
-## ESPHome
-
-```yaml
-uart:
-  baud_rate: 19200
-  tx_pin: GPIO16
-  rx_pin: GPIO17
-  parity: EVEN
-
-modbus_controller:
-- address: 0x1
-
-binary_sensor:
-  - platform: modbus_controller
-    name: "Changer filtre"
-    device_class: problem
-    entity_category: diagnostic
-    icon: mdi:air-filter
-    register_type: holding
-    address: 0x0082
-  - platform: gpio # Avec amélioration 2 et bouche K1a
-    name: "Bouche K1a"
-    device_class: opening
-    icon: "mdi:hvac"
-    pin:
-      number: GPIO34
-      mode: INPUT
-    filters:
-      - delayed_on: 100ms
-      - delayed_off: 50000ms
-  - platform: gpio # Avec amélioration 2 et bouche K2
-    name: "Bouche K2"
-    device_class: opening
-    icon: "mdi:hvac"
-    pin:
-      number: GPIO35
-      mode: INPUT
-    filters:
-      - delayed_on: 100ms
-      - delayed_off: 50000ms
-  - platform: gpio # Avec amélioration 2 et bouche K3
-    name: "Bouche 3"
-    device_class: opening
-    icon: "mdi:hvac"
-    pin:
-      number: GPIO36
-      mode: INPUT
-    filters:
-      - delayed_on: 100ms
-      - delayed_off: 50000ms
-  - platform: gpio # Avec amélioration 2 et bouche K4
-    name: "Bouche K4"
-    device_class: opening
-    icon: "mdi:hvac"
-    pin:
-      number: GPIO34
-      mode: INPUT
-    filters:
-      - delayed_on: 100ms
-      - delayed_off: 50000ms
-
-number:
-  - platform: modbus_controller
-    name: "Thermostat K1a"
-    icon: "mdi:thermostat"
-    unit_of_measurement: "°C"
-    address: 0x96
-    value_type: U_WORD
-    min_value: 16
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller # Commenter si vous n'avez pas de K1b
-    name: "Thermostat K1b"
-    icon: "mdi:thermostat"
-    unit_of_measurement: "°C"
-    address: 0x97
-    value_type: U_WORD
-    min_value: 16
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    name: "Thermostat K2"
-    icon: "mdi:thermostat"
-    unit_of_measurement: "°C"
-    address: 0x98
-    value_type: U_WORD
-    min_value: 16
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    name: "Thermostat K3"
-    icon: "mdi:thermostat"
-    unit_of_measurement: "°C"
-    address: 0x99
-    value_type: U_WORD
-    min_value: 16
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    name: "Thermostat K4"
-    icon: "mdi:thermostat"
-    unit_of_measurement: "°C"
-    address: 0x9a
-    value_type: U_WORD
-    min_value: 16
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    name: "Tarif HP"
-    icon: mdi:currency-eur
-    entity_category: config
-    mode: box
-    unit_of_measurement: "€"
-    address: 0xA0
-    value_type: U_WORD
-    min_value: 0.05
-    max_value: 1
-    use_write_multiple: true
-    multiply: 1000
-    step: 0.001
-  - platform: modbus_controller
-    name: "Tarif HC"
-    icon: mdi:currency-eur
-    entity_category: config
-    mode: box
-    unit_of_measurement: "€"
-    address: 0xA1
-    value_type: U_WORD
-    min_value: 0.05
-    max_value: 1
-    use_write_multiple: true
-    multiply: 1000
-    step: 0.001
-
-select:
-  - platform: modbus_controller
-    name: "Mode air"
-    icon: "mdi:hvac"
-    address: 0x007A
-    value_type: U_WORD
-    use_write_multiple: true
-    optimistic: true
-    optionsmap:
-      "off": 0
-      "heat": 1
-      "Chauffage économique": 2
-      "Programme chauffage A": 3
-      "Programme chauffage B": 4
-      "cool" : 5 # Si vous avez la climatisation activée
-      "Climatisation boost" : 6 # Si vous avez la climatisation activée
-      "Programme climatisation C" : 7 # Si vous avez la climatisation activée
-      "Programme climatisation D" : 8 # Si vous avez la climatisation activée
-
-sensor:
-  - platform: modbus_controller
-    name: "Version logiciel"
-    disabled_by_default: true
-    entity_category: diagnostic
-    icon: mdi:package
-    register_type: holding
-    address: 0x0001
-    value_type: U_WORD
-  - platform: modbus_controller
-    name: "Identifiant IHM"
-    disabled_by_default: true
-    entity_category: diagnostic
-    icon: mdi:identifier
-    register_type: holding
-    address: 0x000E
-    value_type: U_DWORD
-  - platform: modbus_controller
-    name: "Date et heure"
-    device_class: timestamp
-    disabled_by_default: true
-    entity_category: diagnostic
-    icon: mdi:calendar-clock
-    register_type: holding
-    address: 0x0010
-    value_type: U_DWORD
-  - platform: modbus_controller
-    name: "Temperature principale"
-    device_class: "temperature"
-    state_class: "measurement"
-    register_type: holding
-    address: 0x0078
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    id: mode_air
-    internal: true
-    register_type: holding
-    address: 0x007A
-  - platform: modbus_controller
-    id: thermostat_1
-    internal: yes
-    register_type: holding
-    address: 0x96
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    id: thermostat_2
-    internal: yes
-    register_type: holding
-    address: 0x98
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    id: thermostat_3
-    internal: yes
-    register_type: holding
-    address: 0x99
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    id: hp
-    register_type: holding
-    address: 0xA0
-    value_type: U_WORD
-    unit_of_measurement: "€"
-    accuracy_decimals: 4
-    filters:
-      - multiply: 0.001
-  - platform: modbus_controller
-    id: hc
-    register_type: holding
-    address: 0xA1
-    value_type: U_WORD
-    unit_of_measurement: "€"
-    accuracy_decimals: 4
-    filters:
-      - multiply: 0.001
-
-text_sensor:
-  - platform: modbus_controller
-    name: "Aiguillage vanne"
-    icon: mdi:valve
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x0064
-    raw_encode: HEXBYTES
-    lambda: |-
-      uint16_t value = modbus_controller::word_from_hex_str(x, 0);
-      switch (value) {
-        case 0: return std::string("Etat initial");
-        case 1: return std::string("ECS");
-        case 2: return std::string("Air");
-        case 3: return std::string("Standby");
-        case 4: return std::string("Standby sécurité");
-        case 5: return std::string("En cours de modification");
-        default: return std::string("Inconnu");
-      }
-      return x;
 ```
 
-**Note :** [Pour l'AquaAir, Modbus permet d'autres choses](https://forum.hacf.fr/t/aldes-t-one-air-aquaair/42974/171)
+*(Vous pouvez ajouter un vrai schéma KiCad ou Fritzing dans le dossier **`/doc`** puis l’intégrer ici avec une image.)*
 
-## Home Assistant
+---
 
-Installer [hass-template-climate](https://github.com/jcwillox/hass-template-climate) et définir une entité climate pour chaque thermostat :
+## Installation
+
+### 1. Flasher ESPHome
+
+```bash
+esphome run toug.yaml
+```
+
+* Le fichier **toug.yaml** est fourni dans */esphome*.
+* Renseignez vos paramètres réseau (IP statique conseillée).
+
+### 2. Câblage
+
+1. **UART1** : RX/TX du connecteur « Modbus utilisateur ».
+2. **UART2** : RX/TX du connecteur de l’écran central.
+3. **USB** : branchez la passerelle Aldes si vous souhaitez sniffer les trames.
+4. **I²C** : PCF8575 sur 0x20 / 400 kHz.
+5. Relais bipolaire entre sondes ECS et résistances 2.3 kΩ.
+
+> ⚠️ **Sécurité** : Coupez l’alimentation de la PAC avant toute intervention. Vérifiez la continuité des sondes après câblage.
+
+---
+
+## Intégration Home Assistant
+
+Une fois flashé, l’ESP32 apparaît automatiquement via l’intégration **ESPHome**.
+Toutes les entités (températures, modes, états, relais, etc.) sont créées.
+Exemples d’automatisations :
 
 ```yaml
-climate:
-  - platform: climate_template
-    name: Thermostat K1a
-    unique_id: climate_template_thermostat_k1a
-    availability_template: "{{ is_state('sensor.esphome_aldes_tone_aiguillage_vanne', 'Air') }}"
-    modes:
-      - "cool" # Si la climatisation est activée
-      - "heat"
-      - "off"
-    hvac_mode_template: "{{ states('select.esphome_aldes_tone_mode_air') }}"
-    set_hvac_mode:
-      - action: select.select_option
-        data:
-          entity_id: select.esphome_aldes_tone_mode_air
-          option: "{{ hvac_mode }}"
-    # hvac_action_template: idle # Sans amélioration 2
-    hvac_action_template: >- # Avec amélioration 2
-      {% if (is_state('binary_sensor.esphome_aldes_tone_bouche_k1a', 'on')) %}
-        {% if (is_state('select.esphome_aldes_tone_mode_air', 'heat')) %} heating
-        {% elif (is_state('select.esphome_aldes_tone_mode_air', 'cool')) %} cooling
-        {% else %} idle
-        {% endif %}
-      {% else %} off
-      {% endif %}
-    current_humidity_template: "{{ states('sensor.aqara_temperature_et_humidite_thermostat_k1a_humidity') }}" # Avec amélioration 3
-    current_temperature_template: "{{ states('sensor.aqara_temperature_et_humidite_thermostat_k1a_temperature') }}" # Avec amélioration 3
-    min_temp_template: >-
-      {% if (is_state('select.esphome_aldes_tone_mode_air', 'heat')) %} 16
-      {% else %} 22
-      {% endif %}
-    max_temp_template: >-
-      {% if (is_state('select.esphome_aldes_tone_mode_air', 'heat')) %} 24
-      {% else %} 31
-      {% endif %}
-    target_temperature_template: "{{ states('number.esphome_aldes_tone_thermostat_k1a') }}"
-    set_temperature:
-      - action: number.set_value
-        data:
-          entity_id: number.esphome_aldes_tone_thermostat_1
-          value: "{{ temperature }}"
+alias: Activer simulation ECS si dépasse 58 °C
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.ecs_haut
+    above: 58
+action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.simulation_ecs
 ```
+
+---
+
+## Roadmap
+
+*
+
+---
+
+## License
+
+Distributed under the **MIT License**. See `LICENSE` for more information.
+
+---
+
+🛠️ **Contributions bienvenues !**
+*Forkez, étoilez, proposez vos idées – la communauté fera le reste.*
