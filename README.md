@@ -151,10 +151,17 @@ esphome run toug.yaml
 
 > ⚠️ **Sécurité** : Coupez l’alimentation de la PAC avant toute intervention. Vérifiez la continuité des sondes après câblage.
 
-![image](https://github.com/user-attachments/assets/04e49a60-2b5f-459d-9bbd-449cbecf594d)
+![image](https://github.com/user-attachments/assets/a40edee3-4e15-4fe6-b9da-b2a20df2a963)
 
+### 3. Jumpers
 
-### 3. Explication Routeur Solaire
+1. **TBD** :Connecteur femelle « Modbus » de la carte mère
+2. **TBD** : Connecteur mâle de la télécommande (écran central).
+3. **TBD** : Connecteur « Remote » de la carte mère
+4. **TBD** : Connecteur mâle des sondes de température ECS
+5. **TBD** : Connecteur femelle « Tank » de la carte mère
+
+### 4. Explication Routeur Solaire
 
 > **Prérequis** : Le routeur doit être activable et désactivable à distance par ESPhome de la passerelle ou Home Assistant.
 
