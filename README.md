@@ -139,13 +139,42 @@ esphome run toug.yaml
 
 ### 2. Câblage
 
-1. **UART1** : RX/TX du connecteur « Modbus utilisateur ».
-2. **UART2** : RX/TX du connecteur de l’écran central.
-3. **USB** : branchez la passerelle Aldes si vous souhaitez sniffer les trames.
-4. **I²C** : PCF8575 sur 0x20 / 400 kHz.
-5. Relais bipolaire entre sondes ECS et résistances 2.3 kΩ.
+1. **Modbus** :Connecteur femelle « Modbus » de la carte mère
+2. **Télécommande** : Connecteur mâle de la télécommande (écran central).
+3. **Remote** : Connecteur « Remote » de la carte mère
+4. **Entrée sondes** : Connecteur mâle des sondes de température ECS
+5. **Tank** : Connecteur femelle « Tank » de la carte mère
+6. **USB** : Branchez au port USB de la passerelle Aldes
+7. **I²C** : Extension I2C (Optionnel)
+8. **K1+/K1- à K5+/K5-** : Borniers bouches
+9. **RA/K6** : Résistance Appoint ou Bornier bouche K6 selon jumper
 
 > ⚠️ **Sécurité** : Coupez l’alimentation de la PAC avant toute intervention. Vérifiez la continuité des sondes après câblage.
+
+![image](https://github.com/user-attachments/assets/04e49a60-2b5f-459d-9bbd-449cbecf594d)
+
+
+### 3. Explication Routeur Solaire
+
+> **Prérequis** : Le routeur doit être activable et désactivable à distance par ESPhome de la passerelle ou Home Assistant.
+
+Il est possible de piloter la résistance d'appoint ECS par un routeur solaire (Aldes T.One® AquaAIR uniquement)
+
+Dans ce cas, ce n'est plus la carte mère qui pilote directement la résistance d'appoint mais le routeur.
+La résistance d'appoint sert normalement à monter la température de 50° à 60° pour le cycle anti légionellose ou lorsque la PAC ne suffit pas lors de grand froid.
+Il est donc important de garder ce mode de fonctionnement en plus du routeur solaire.
+
+Avec le routeur solaire, on peut autoriser le ballon à monter plus haut en température (max 80°, au delà la sécurité thermique à réarmement manuel Kt°1 se déclenche).
+
+**Fonctionnement** : Le routeur chauffe l'eau en fonction du surplus non consommé par la maison.
+>Si la température dépasse 80° (sonde haut, bas, ou température ECS du modbus), alors on désactive le routeur jusqu'à redescendre sous 79°.
+> > Quand la température dépasse 60°, la PAC se met en erreur "Température ECS trop haute", ainsi il faut lui faire croire que la température est à 60¨° 
+> > Pour celà on bascule la carte mère vers des "fausses" sondes NTC : des résistances de 2.3 kΩ représentant 60°
+
+>Si la carte mère demande à activer la résistance d'appoint, alors on force le routeur à 100%, jusqu'à que la carte mère arrête.
+> > Pour détecter la demande, on remplace la phase de la résistance d'appoint sur le connecteur "AUX Heater" de carte mère par 3.3V (ou GND) et on lit la valeur du connecteur de la résistance d'appoint ("TANK HW") : si le relais s'active on reçoit 3.3V (ou GND)
+
+>Si en fin de journée la température ECS dépasse la consigne, la PAC ne se mettra pas en route pour chauffer l'eau, sinon elle complètera le routeur.
 
 ---
 
