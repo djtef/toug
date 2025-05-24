@@ -156,9 +156,9 @@ esphome run toug.yaml
 
 ### 3. Jumpers
 
-1. **Sélection 12V** : Sélectionne la source de l'alimentation 12V (Télécommande ou M%odbus)
+1. **Sélection 12V** : Sélectionne la source de l'alimentation 12V (Télécommande ou Modbus)
 2. **VCC I2C** : Sélectionne la tension à envoyer sur le connecteur I2C (5V ou 3.3V).
-3. **Sélection PullUp/PullDown** : Connecte une résistance en PullUp ou PullDown sur les entrée GPIO35, 36 et 39
+3. **Sélection PullUp/PullDown** : Connecte une résistance en PullUp ou PullDown sur les entrées GPIO35, 36 et 39
 4. **Ref Résistance d'appoint** : Envoie 3.3V ou GND en tant que référence d'entrée pour la détection de la résistance d'appoint (connecteur 9)
 5. **Sélection 5V** : Sélectionne la source de l'alimentation 5V (USB ou conversion 12V)
 
