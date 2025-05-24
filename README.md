@@ -184,6 +184,26 @@ Avec le routeur solaire, on peut autoriser le ballon à monter plus haut en temp
 
 >Si en fin de journée la température ECS dépasse la consigne, la PAC ne se mettra pas en route pour chauffer l'eau, sinon elle complètera le routeur.
 
+
+### 5. Simulation sondes 60°
+
+> Pour éviter que la PAC se mettre en erreur lorsque la température ECS dépasse 60°, il faut lui faire croire qu'elle ne dépasse pas 60° en simulant de fausses sondes de température NTC 10K.
+
+Les sondes de température NTC sont des résistances variables en fonction de la température, ainsi, à chaque température correspond une résistance. Grâce à un diviseur de tension interne, la carte mère mesure la tension aux bornes des sondes, proportionnelles à la résistance et donc à la température qu'elle arrive à déduire.
+La résistance qui correspond à 60° est  2.3 kΩ, il faut donc déconnecter les sondes de la carte mère et lui connecter une résistance de  2.3 kΩ. Mais il faut toujours connaitre les températures Haut et Bas ECS sur notre carte pour ne pas dépasser 80°. Ainsi il nous faut connecter les sondes sur notre passerelle avec notre propre diviseur de tension.
+Pour résumer :
+> En dessous de 60°, on peut se connecter en parallèle de la carte mère pour mesurer la tension aux bornes des sondes en partageant le diviseur de tension de la carte mère.
+> AU dessus de 60°, on remplace les sondes par des résistance de 2.3 kΩ côté carte mère, et on continue à lire les sondes sur la passerelle avec un diviseur de tension propre à la passerelle.
+
+Plusieurs solutions possibles :
+* Remplacer les sondes côté carte mère par un potentiomètre numérique (par exemple un MCP4461 qui est disponible pour esphome)  piloté par la passerelle qui lit en permanence les sondes avec son porpre diviseur de tension.
+* Utiliser un relais qui bascule les entrées de la carte mère soit vers les vraies sondes, soit vers des résistances de 2.3 kΩ en activant un diviseur de tension côté passerelle pour continuer à lire les valeurs des sondes.
+
+Sur la V1.0 de la passerelle, **cette fonctionnalité n'est pas disponible** suite à une erreur de design, il faut réaliser donc une carte additionnelle en I2C (en utilisant les connecteurs MCP4728 et ADS1115).
+De mon côté j'ai choisi la 2e solution pour corriger le problème.
+Je fournirai un schéma de ma solution.
+
+
 ---
 
 ## Intégration Home Assistant
