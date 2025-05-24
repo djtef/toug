@@ -306,7 +306,7 @@ Voici le résultat :
 
 * La simulation des sondes à 60° n'est pas fonctionnelle Voir [Simulation sondes](#5-simulation-sondes-60)
 * Le connecteur femelle de la télécommande (2)  est inversé, on ne peut pas y brancher directement le connecteur mâle de la télécommande.
-* Bien que théoriquement on puisse connecter directement les connecteurs mâles des sondes et de la télécommande sur les connecteurs femelles de la passerelle, en réalité ce n'est pas forcément pratique car les câble d'origine sont courts et ça empêche de mettre la passerelle où on veut. Il est plus jusdicieux de connecter un cable avec un connecteur femelle en guise de ralonge jusqu'à la passerelle.
+* Bien que théoriquement on puisse connecter directement les connecteurs mâles des sondes et de la télécommande sur les connecteurs femelles de la passerelle, en réalité ce n'est pas forcément pratique car les câbles d'origine sont courts et ça empêche de mettre la passerelle où on veut. Il est plus jusdicieux de connecter un cable avec un connecteur femelle en guise de ralonge jusqu'à la passerelle.
 
 ---
 
