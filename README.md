@@ -295,11 +295,11 @@ climate:
 ```
 Voici le résultat :
 
-![climate1](/V2/src/images/ha/thermostat%20séjour%20k1a-1.png)
+![climate1](/doc/images/climate1.png)
 
-![climate2](/V2/src/images/ha/thermostat%20séjour%20k1a-2.png)
+![climate2](/doc/images/climate2.png)
 
-![climate3](/V2/src/images/ha/thermostat%20séjour%20k1a-3.png)
+![climate3](/doc/images/climate3.png)
 
 ---
 
