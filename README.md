@@ -151,15 +151,16 @@ esphome run toug.yaml
 
 > ⚠️ **Sécurité** : Coupez l’alimentation de la PAC avant toute intervention. Vérifiez la continuité des sondes après câblage.
 
-![image](https://github.com/user-attachments/assets/a40edee3-4e15-4fe6-b9da-b2a20df2a963)
+![image](https://github.com/user-attachments/assets/21f1d627-101c-4075-81c3-fc9126faa32d)
+
 
 ### 3. Jumpers
 
-1. **TBD** :Connecteur femelle « Modbus » de la carte mère
-2. **TBD** : Connecteur mâle de la télécommande (écran central).
-3. **TBD** : Connecteur « Remote » de la carte mère
-4. **TBD** : Connecteur mâle des sondes de température ECS
-5. **TBD** : Connecteur femelle « Tank » de la carte mère
+1. **Sélection 12V** : Sélectionne la source de l'alimentation 12V (Télécommande ou M%odbus)
+2. **VCC I2C** : Sélectionne la tension à envoyer sur le connecteur I2C (5V ou 3.3V).
+3. **Sélection PullUp/PullDown** : Connecte une résistance en PullUp ou PullDown sur les entrée GPIO35, 36 et 39
+4. **Ref Résistance d'appoint** : Envoie 3.3V ou GND en tant que référence d'entrée pour la détection de la résistance d'appoint (connecteur 9)
+5. **Sélection 5V** : Sélectionne la source de l'alimentation 5V (USB ou conversion 12V)
 
 ### 4. Explication Routeur Solaire
 
