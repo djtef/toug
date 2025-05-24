@@ -39,6 +39,7 @@
 * **Modbus écran central** (UART secondaire) : accès à des registres avancés normalement invisibles (températures des pièces, pressions du gaz, débits, etc.)
 * **Interface série passerelle Aldes** (USB) : reverse‑engineering en cours pour remplacer la passerelle officielle AldesConnect® Box via l'USB
 * **Extension I2C** : permet l'ajout de fonctionnalités via le bus I2C
+* **Réseau** : Ethernet ou Wifi
 
 ### Surveillance & commandes
 
