@@ -8,6 +8,11 @@
 
 &#x20;&#x20;
 
+![touga2](https://github.com/user-attachments/assets/59892eb9-fa53-43a9-8cca-c5437c7e87dd)
+
+![touga](https://github.com/user-attachments/assets/6002d573-57a5-4d28-bc2e-dffc2f2c387c)
+
+
 > Contrôlez votre pompe à chaleur *Aldes T.One® AIR/AquaAIR** entièrement en local via un **WT32‑ETH01** (ESP32 + Ethernet) et profitez d’une intégration immédiate dans **Home Assistant** – sans cloud ni passerelle propriétaire.
 
 ---
@@ -19,8 +24,10 @@
 3. [Schéma de principe](#schéma-de-principe)
 4. [Installation](#installation)
 5. [Intégration Home Assistant](#intégration-home-assistant)
-6. [Roadmap](#roadmap)
+6. [Limitations](#limitations)
 7. [License](#license)
+
+
 
 ---
 
@@ -38,7 +45,7 @@
 * Suivi de l’**ouverture jusqu'à 6 bouches de ventilation**.
 * Détection de la **demande de résistance d’appoint** (AquaAIR seulement)
 * Lecture des sondes **ECS haut & bas** (NTC 10 kΩ) (AquaAIR seulement)
-* **Simulation** d’une température ECS de **60 °C** pour éviter l’erreur température trop haute lorsque l’eau est chauffée par un routeur solaire DIY (AquaAIR seulement) /!\ Voir ci-après
+* **Simulation** d’une température ECS de **60 °C** pour éviter l’erreur température trop haute lorsque l’eau est chauffée par un routeur solaire DIY (AquaAIR seulement) ⚠️ Voir [Simulation sondes](#5-simulation-sondes-60)
 
 ### Alimentation
 
@@ -200,35 +207,106 @@ Plusieurs solutions possibles :
 * Utiliser un relais qui bascule les entrées de la carte mère soit vers les vraies sondes, soit vers des résistances de 2.3 kΩ en activant un diviseur de tension côté passerelle pour continuer à lire les valeurs des sondes.
 
 Sur la V1.0 de la passerelle, **cette fonctionnalité n'est pas disponible** suite à une erreur de design, il faut réaliser donc une carte additionnelle en I2C (en utilisant les connecteurs MCP4728 et ADS1115).
+
 De mon côté j'ai choisi la 2e solution pour corriger le problème.
+
 Je fournirai un schéma de ma solution.
 
+Une fois tout branché :
+
+![touga3](https://github.com/user-attachments/assets/4aec945a-05a0-4683-b4c4-530ffbb46372)
 
 ---
 
 ## Intégration Home Assistant
 
-Une fois flashé, l’ESP32 apparaît automatiquement via l’intégration **ESPHome**.
-Toutes les entités (températures, modes, états, relais, etc.) sont créées.
-Exemples d’automatisations :
+Installer hass-template-climate dans HACS et ajouter la configuration Yaml
 
+Exemple:
 ```yaml
-alias: Activer simulation ECS si dépasse 58 °C
-trigger:
-  - platform: numeric_state
-    entity_id: sensor.ecs_haut
-    above: 58
-action:
-  - service: switch.turn_on
-    target:
-      entity_id: switch.simulation_ecs
+climate:
+  - platform: climate_template
+    name: Séjour k1a
+    unique_id: sejour_k1a_template
+    icon_template: mdi:home-thermometer
+    availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
+    modes:
+      - "heat"
+      - "cool"                              # Si la climatisation est activée
+      - "off"
+    hvac_mode_template: "{{ states('select.esphome_aldes_mode_air') }}"
+    set_hvac_mode:
+      - action: select.select_option
+        data:
+          entity_id: select.esphome_aldes_mode_air
+          option: "{{ hvac_mode }}"
+    # hvac_action_template: IDLE # Sans amélioration 2
+    hvac_action_template: >- # Avec amélioration 2 # à adapter
+      {% if (is_state('binary_sensor.esphome_aldes_sejour_bouche_k1a', 'on')) %}             
+        {% if ( is_state('select.esphome_aldes_mode_air', 'heat')  
+             or is_state('select.esphome_aldes_mode_air', 'Chauffage économique')
+             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage A')
+             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage B')) %} 
+            heating
+        {% elif (is_state('select.esphome_aldes_mode_air', 'cool')
+              or is_state('select.esphome_aldes_mode_air', 'Climatisation boost')
+              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation C')
+              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation D')) %} 
+            cooling
+        {% else %} 
+            idle
+        {% endif %}
+      {% else %} 
+         off
+      {% endif %}
+    #current_humidity_template: "{{ states('sensor.aqara_temperature_et_humidite_thermostat_k1a_humidity') }}" # Avec amélioration 3
+    current_temperature_template: "{{ states('sensor.esphome_aldes_sejour_temperature_k1a') }}"      # à adapter
+    min_temp_template: >-
+      {## 0°C est là pour pouvoir eteindre les thermostats muraux   ##} 
+      {% if (   is_state('select.esphome_aldes_mode_air', 'heat')  
+             or is_state('select.esphome_aldes_mode_air', 'Chauffage économique')
+             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage A')
+             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage B')) %} 
+         0              {##  16°C réél mini pour le mode chauffage  ##} 
+      {% else %} 
+         0              {## 22°C réél mini pour le mode climatisation ##} 
+      {% endif %}
+    max_temp_template: >-
+      {% if ( is_state('select.esphome_aldes_mode_air', 'heat')  
+           or is_state('select.esphome_aldes_mode_air', 'Chauffage économique')
+           or is_state('select.esphome_aldes_mode_air', 'Programme chauffage A')
+           or is_state('select.esphome_aldes_mode_air', 'Programme chauffage B')) %} 
+          24
+       {% elif  (is_state('select.esphome_aldes_mode_air', 'cool')
+              or is_state('select.esphome_aldes_mode_air', 'Climatisation boost')
+              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation C')
+              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation D')) %}
+           31
+      {% else %} 
+          24        {##  pas vraiment besoin  ##} 
+      {% endif %}
+    target_temperature_template: "{{ states('number.esphome_aldes_sejour_thermostat_k1a') }}"        # à adapter
+    set_temperature:
+      - action: number.set_value
+        data:
+          entity_id: number.esphome_aldes_sejour_thermostat_k1a                                      # à adapter
+          value: "{{ temperature }}"
 ```
+Voici le résultat :
+
+![climate1](/V2/src/images/ha/thermostat%20séjour%20k1a-1.png)
+
+![climate2](/V2/src/images/ha/thermostat%20séjour%20k1a-2.png)
+
+![climate3](/V2/src/images/ha/thermostat%20séjour%20k1a-3.png)
 
 ---
 
-## Roadmap
+## Limitations
 
-*
+* La simulation des sondes à 60° n'est pas fonctionnelle Voir [Simulation sondes](#5-simulation-sondes-60)
+* Le connecteur femelle de la télécommande (2)  est inversé, on ne peut pas y brancher directement le connecteur mâle de la télécommande.
+* Bien que théoriquement on puisse connecter directement les connecteurs mâles des sondes et de la télécommande sur les connecteurs femelles de la passerelle, en réalité ce n'est pas forcément pratique car les câble d'origine sont courts et ça empêche de mettre la passerelle où on veut. Il est plus jusdicieux de connecter un cable avec un connecteur femelle en guise de ralonge jusqu'à la passerelle.
 
 ---
 
