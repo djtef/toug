@@ -1,11 +1,1 @@
-substitutions:
-  slug: toug-aquaair
-  name: TOUG AquaAIR
-  description: Passerelle ethernet locale pour le T.one AquaAIR avec routeur solaire
-  
-packages:
-  # <<: !include_dir_named common
-  board: !include boards/wt32-eth01_ethernet.yaml
-  device: !include devices/tone_aquaair.yaml
-  option: !include devices/tone_routeur.yaml
-  
+toug_aquaair_routeur_eth.yaml
