@@ -1,0 +1,122 @@
+packages:
+  device: !include tone_air.yaml
+  
+  
+i2c:
+    sda: GPIO04
+    scl: GPIO02
+    frequency: 100kHz 
+
+
+ads1115:
+  - address: 0x48
+
+sensor:
+  
+  - platform: ntc
+    sensor: resistance_bas
+    calibration:
+        - 1.3kOhm -> 78°C
+        - 4.2kOhm -> 46°C
+        - 11.66kOhm -> 24°C
+    name: Temperature bas
+    id: temperature_bas
+    # on_value_range:
+      # - below: 59.0
+        # then:
+          # - if:
+              # condition:
+                # sensor.in_range:
+                  # id: temperature_haut
+                  # below: 59.0
+              # then:
+                # - switch.turn_off: force_60
+      # - above: 60.5
+        # then:
+          # - switch.turn_on: force_60
+  - platform: resistance
+    id: resistance_bas
+    sensor: adc_bas
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+    name: Resistance bas
+
+    
+  - platform: ntc
+    sensor: resistance_haut
+    calibration:
+        - 1.3kOhm -> 78°C
+        - 4.8kOhm -> 44°C
+        - 11.42kOhm -> 24°C
+    name: Temperature haut
+    id: temperature_haut
+    # on_value_range:
+      # - below: 59.0
+        # then:
+          # - if:
+              # condition:
+                # sensor.in_range:
+                  # id: temperature_bas
+                  # below: 59.0
+              # then:
+                # - switch.turn_off: force_60
+      # - above: 60.5
+        # then:
+          # - switch.turn_on: force_60
+  - platform: resistance
+    id: resistance_haut
+    sensor: adc_haut
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+    name: Resistance Haut
+
+        
+  - platform: ads1115
+    id: adc_haut
+    multiplexer: 'A0_GND'
+    gain: 4.096
+    update_interval: 10s
+    filters:
+        - sliding_window_moving_average:
+            window_size: 15
+            send_every: 15
+  - platform: ads1115
+    id: adc_bas
+    multiplexer: 'A1_GND'
+    gain: 4.096
+    update_interval: 10s
+    filters:
+        - sliding_window_moving_average:
+            window_size: 15
+            send_every: 15
+
+number:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_user
+    name: "Consigne ECS"
+    register_type: holding
+    address: 0x006F
+    value_type: U_WORD
+    step: 0.1
+    min_value: 7
+    max_value: 61
+    use_write_multiple: true
+    entity_category: config
+    unit_of_measurement: "°C"
+    icon: "mdi:thermostat"
+    multiply: 100
+  
+select:
+
+  - platform: modbus_controller
+    modbus_controller_id: modbus_user
+    name: "Mode ECS"
+    icon: "mdi:water-boiler"
+    entity_category: config
+    address: 0x0071
+    value_type: U_WORD
+    use_write_multiple: true
+    optionsmap:
+      "Off": 0
+      "On": 1
+      "Boost": 2

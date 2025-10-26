@@ -1,0 +1,10 @@
+substitutions:
+  slug: toug-air
+  name: TOUG AIR
+  description: Passerelle ethernet locale pour le T.one AIR
+  
+packages:
+  # <<: !include_dir_named common
+  board: !include boards/wt32-eth01_ethernet.yaml
+  device: !include devices/tone_air.yaml
+  

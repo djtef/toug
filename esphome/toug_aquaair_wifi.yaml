@@ -1,0 +1,10 @@
+substitutions:
+  slug: toug-aquaair
+  name: TOUG AquaAIR
+  description: Passerelle wifi locale pour le T.one AquaAIR
+  
+packages:
+  # <<: !include_dir_named common
+  board: !include boards/wt32-eth01_wifi.yaml
+  device: !include devices/tone_aquaair.yaml
+  

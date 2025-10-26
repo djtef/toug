@@ -1,0 +1,24 @@
+---
+# ESP32 WT32-ETH01
+#
+# WT32-ETH01 is an embedded serial port to Ethernet module based on ESP32
+#
+# http://www.wireless-tag.com/wp-content/uploads/2022/10/WT32-ETH01_datasheet_V1.3-en.pdf
+#
+substitutions:
+  i2c_bus_a_sda: "15"
+  i2c_bus_a_scl: "14"
+  i2c_bus_b_sda: "04"
+  i2c_bus_b_scl: "02"
+  
+# uart:
+  # tx_pin: GPIO17
+  # rx_pin: GPIO5
+  
+esp32:
+  board: wt32-eth01
+  framework:
+      type: esp-idf
+  
+packages:
+  wifi: !include ../components/wifi.yaml

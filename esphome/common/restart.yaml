@@ -1,0 +1,10 @@
+---
+# Restart
+#
+# A simple button to restart or reset the ESP device.
+#
+# https://esphome.io/components/button/restart.html
+#
+button:
+  - <<: !include ../buttons/restart.yaml
+  - <<: !include ../buttons/factory_reset.yaml
