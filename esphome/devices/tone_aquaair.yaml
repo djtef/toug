@@ -21,19 +21,7 @@ sensor:
         - 11.66kOhm -> 24°C
     name: Temperature bas
     id: temperature_bas
-    # on_value_range:
-      # - below: 59.0
-        # then:
-          # - if:
-              # condition:
-                # sensor.in_range:
-                  # id: temperature_haut
-                  # below: 59.0
-              # then:
-                # - switch.turn_off: force_60
-      # - above: 60.5
-        # then:
-          # - switch.turn_on: force_60
+
   - platform: resistance
     id: resistance_bas
     sensor: adc_bas
@@ -50,19 +38,7 @@ sensor:
         - 11.42kOhm -> 24°C
     name: Temperature haut
     id: temperature_haut
-    # on_value_range:
-      # - below: 59.0
-        # then:
-          # - if:
-              # condition:
-                # sensor.in_range:
-                  # id: temperature_bas
-                  # below: 59.0
-              # then:
-                # - switch.turn_off: force_60
-      # - above: 60.5
-        # then:
-          # - switch.turn_on: force_60
+
   - platform: resistance
     id: resistance_haut
     sensor: adc_haut
