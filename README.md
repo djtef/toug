@@ -246,70 +246,122 @@ Exemple:
 ```yaml
 climate:
   - platform: climate_template
-    name: Séjour k1a
-    unique_id: sejour_k1a_template
+    name: Séjour
+    unique_id: sejour_k1a_climate_template
     icon_template: mdi:home-thermometer
-    availability_template: "{{ is_state('sensor.esphome_aldes_aiguillage_vanne', 'Air') }}"
+    availability_template: >- 
+        {{ is_state('sensor.aiguillage_vanne', 'Air') 
+        or  is_state('sensor.aiguillage_vanne', 'Standby')
+        or  is_state('sensor.aiguillage_vanne', 'ECS') }}
     modes:
       - "heat"
-      - "cool"                              # Si la climatisation est activée
+      - "cool"  # Si la climatisation est activée
       - "off"
-    hvac_mode_template: "{{ states('select.esphome_aldes_mode_air') }}"
+    preset_modes:
+      - comfort
+      - eco
+      - away
+      - home
+      - boost
+      - none
+    hvac_mode_template: >-
+      {% if 'Chauffage' in states('select.mode_air') %} 
+          heat
+      {% elif 'Clim' in states('select.mode_air') %} 
+          cool
+      {% else %} 
+          off      
+      {% endif %}
+    preset_mode_template: >-
+      {% if is_state('select.mode_air', 'Off') %}
+        none
+      {% elif 'Confort' in states('select.mode_air') %}
+        comfort
+      {% elif 'Prog A' in states('select.mode_air') or 'Prog C' in states('select.mode_air') %}
+        away
+      {% elif 'Prog B' in states('select.mode_air') or 'Prog D' in states('select.mode_air') %}
+        home
+      {% elif 'Eco' in states('select.mode_air') %}
+        eco
+      {% elif 'Boost' in states('select.mode_air') %}
+        boost
+      {% else %}
+        none
+      {% endif %}
+    set_preset_mode:
+      - action: select.select_option
+        data:
+          entity_id: select.mode_air
+          option: >-
+            {% if 'Chauffage' in states('select.mode_air') %} 
+                {% if preset_mode == 'none' %}
+                    Off
+                {% elif preset_mode == 'comfort' or preset_mode == 'boost' %}
+                    Confort Chauffage
+                {% elif preset_mode == 'away' %}
+                   Prog A Chauffage
+                {% elif preset_mode == 'home' %}
+                   Prog B Chauffage
+                {% elif preset_mode == 'eco' %}
+                   Eco Chauffage
+                {% endif %}
+            {% elif 'Clim' in states('select.mode_air') %} 
+              {% if preset_mode == 'none' %}
+                    Off
+                {% elif preset_mode == 'comfort' or preset_mode == 'eco' %}
+                    Confort Clim
+                {% elif preset_mode == 'away' %}
+                   Prog C Clim
+                {% elif preset_mode == 'home' %}
+                   Prog D Clim
+                {% elif preset_mode == 'boost' %}
+                   Boost Clim
+                {% endif %}
+            {% else %}
+              Off
+            {% endif %}
     set_hvac_mode:
       - action: select.select_option
         data:
-          entity_id: select.esphome_aldes_mode_air
-          option: "{{ hvac_mode }}"
-    # hvac_action_template: IDLE # Sans amélioration 2
-    hvac_action_template: >- # Avec amélioration 2 # à adapter
-      {% if (is_state('binary_sensor.esphome_aldes_sejour_bouche_k1a', 'on')) %}             
-        {% if ( is_state('select.esphome_aldes_mode_air', 'heat')  
-             or is_state('select.esphome_aldes_mode_air', 'Chauffage économique')
-             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage A')
-             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage B')) %} 
-            heating
-        {% elif (is_state('select.esphome_aldes_mode_air', 'cool')
-              or is_state('select.esphome_aldes_mode_air', 'Climatisation boost')
-              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation C')
-              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation D')) %} 
-            cooling
-        {% else %} 
-            idle
-        {% endif %}
-      {% else %} 
-         off
+          entity_id: select.mode_air
+          option: >-
+            {% if hvac_mode == 'heat' %}
+              Confort Chauffage
+            {% elif hvac_mode == 'cool' %}
+              Confort Clim
+            {% elif hvac_mode == 'off' %}
+              Off
+            {% else %}
+              Off
+            {% endif %}
+    hvac_action_template: >-
+      {% if is_state('binary_sensor.bouche_k1a', 'off') %}
+        off
+      {% elif 'Chauffage' in states('select.mode_air') %}
+        heating
+      {% elif 'Clim' in states('select.mode_air') %}
+        cooling
+      {% else %}
+        idle
       {% endif %}
-    #current_humidity_template: "{{ states('sensor.aqara_temperature_et_humidite_thermostat_k1a_humidity') }}" # Avec amélioration 3
-    current_temperature_template: "{{ states('sensor.esphome_aldes_sejour_temperature_k1a') }}"      # à adapter
-    min_temp_template: >-
-      {## 0°C est là pour pouvoir eteindre les thermostats muraux   ##} 
-      {% if (   is_state('select.esphome_aldes_mode_air', 'heat')  
-             or is_state('select.esphome_aldes_mode_air', 'Chauffage économique')
-             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage A')
-             or is_state('select.esphome_aldes_mode_air', 'Programme chauffage B')) %} 
-         0              {##  16°C réél mini pour le mode chauffage  ##} 
-      {% else %} 
-         0              {## 22°C réél mini pour le mode climatisation ##} 
-      {% endif %}
+
+    #current_humidity_template: "{{ states('sensor.aqara_temperature_et_humidite_thermostat_k1a_humidity') }}" # Avec capteur additionnel
+    temp_step: 1
+    current_temperature_template: "{{ states('sensor.temperature_piece_principale') }}"     
+    min_temp: 0
     max_temp_template: >-
-      {% if ( is_state('select.esphome_aldes_mode_air', 'heat')  
-           or is_state('select.esphome_aldes_mode_air', 'Chauffage économique')
-           or is_state('select.esphome_aldes_mode_air', 'Programme chauffage A')
-           or is_state('select.esphome_aldes_mode_air', 'Programme chauffage B')) %} 
+      {% if 'Chauffage' in states('select.mode_air') %} 
           24
-       {% elif  (is_state('select.esphome_aldes_mode_air', 'cool')
-              or is_state('select.esphome_aldes_mode_air', 'Climatisation boost')
-              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation C')
-              or is_state('select.esphome_aldes_mode_air', 'Programme climatisation D')) %}
+      {% elif 'Clim' in states('select.mode_air') %} 
            31
       {% else %} 
           24        {##  pas vraiment besoin  ##} 
       {% endif %}
-    target_temperature_template: "{{ states('number.esphome_aldes_sejour_thermostat_k1a') }}"        # à adapter
+    target_temperature_template: "{{ states('number.thermostat_1') }}" 
     set_temperature:
       - action: number.set_value
         data:
-          entity_id: number.esphome_aldes_sejour_thermostat_k1a                                      # à adapter
+          entity_id: number.thermostat_1  
           value: "{{ temperature }}"
 ```
 Voici le résultat :
