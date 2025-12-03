@@ -3,21 +3,15 @@ substitutions:
   
   # 1/ Définir le T.one connecté à la TOUG (T.One AIR  ou T.One AquaAIR)
   TOne: #air ou aquaair
+    
+  # 2/ Indiquer le nombre de thermostats
+  nombre_thermostats: #nombre entre 1 et 9
   
-  # 2/ Définir le mode de connexion réseau (wifi ou ethernet)
-  reseau: #wifi ou eth 
-  
-  # 3/ Indiquer si un routeur solaire sera connecté
-  routeur: #oui ou non 
-  
-  # 4/ Indiquer le nombre de thermostats
-  nombre_thermostats: 4 # entre 1 et 9
-  
-  # 5/ (optionnel) Remplacer le nom et la description par défaut si besoin (décommenter)
+  # 3/ (optionnel) Remplacer le nom et la description par défaut si besoin (décommenter)
   # name: Mon Nom Perso # (friendly_name)
   # description: Mettre ici la description de remplacement
   
-  # 6/ (optionnel) Remplacer le nom des cannaux/bouches/thermostats (par exemple par pièce) (décommenter)
+  # 4/ (optionnel) Remplacer le nom des cannaux/bouches/thermostats (par exemple par pièce) (décommenter)
   # K1a: Pièce 1
   # K1b: Pièce 1 bis # Normalement identique à K1a
   # K2: Pièce 2
@@ -27,18 +21,27 @@ substitutions:
   # K6: Pièce 6
   # K7: Pièce 7
   # K8: Pièce 8
-
+  
+  # 5/ Voir ci-dessous
+  
 
 ## Customization area
 ##### My customization - Start #####
 ##### My customization - End #####
 
 ## Téléchargement de la configuration ESPHome
+## Choix et téléchargement de la configuration ESPHome
 packages:
   remote_package:
     url: https://github.com/djtef/toug
     ref: main
     refresh: 300s
     files:
-      - esphome/toug_${TOne}${routeur == 'oui' and '_routeur' or ''}_${reseau}.yaml
+      # 5/ Décommenter la configuration à télécharger
+      # - esphome/toug_air_eth.yaml               #T.One AIR avec connexion ethernet
+      # - esphome/toug_air_wifi.yaml              #T.One AIR avec connexion wifi
+      # - esphome/toug_aquaair_eth.yaml           #T.One AquaAIR avec connexion ethernet
+      # - esphome/toug_aquaair_wifi.yaml          #T.One AquaAIR avec connexion wifi
+      # - esphome/toug_aquaair_routeur_wifi.yaml  #T.One AquaAIR avec connexion ethernet et routeur solaire
+      # - esphome/toug_aquaair_routeur_eth.yaml   #T.One AquaAIR avec connexion wifi et routeur solaire
 
