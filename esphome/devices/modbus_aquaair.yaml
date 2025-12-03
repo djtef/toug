@@ -1,0 +1,64 @@
+number:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_user
+    name: "Consigne ECS"
+    register_type: holding
+    address: 0x006F
+    value_type: U_WORD
+    step: 0.1
+    min_value: 7
+    max_value: 61
+    use_write_multiple: true
+    entity_category: config
+    unit_of_measurement: "°C"
+    icon: "mdi:thermostat"
+    multiply: 100
+  
+select:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_user
+    name: "Mode ECS"
+    icon: "mdi:water-boiler"
+    entity_category: config
+    address: 0x0071
+    value_type: U_WORD
+    use_write_multiple: true
+    optionsmap:
+      "Off": 0
+      "On": 1
+      "Boost": 2
+      
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_user
+    name: "Volume restant ECS"
+    device_class: "volume"
+    state_class: "measurement"
+    icon: mdi:hydraulic-oil-level
+    register_type: holding
+    address: 0x006E
+    value_type: U_WORD
+    unit_of_measurement: "L"
+  - platform: modbus_controller
+    modbus_controller_id: modbus_user
+    id: consigne_ecs_lue
+    register_type: holding
+    address: 0x006F
+    value_type: U_WORD
+    accuracy_decimals: 1
+    unit_of_measurement: "°C"
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_user
+    name: "Température ECS"
+    state_class: "measurement"
+    device_class: "temperature"
+    icon: mdi:water-thermometer-outline
+    register_type: holding
+    address: 0x0070
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01

@@ -1,0 +1,247 @@
+script:
+  - id: update_mode_ecs_telecommande
+    then:
+      - lambda: |-
+          uint16_t value = (uint16_t) id(registre_9_telecommande).state;
+          uint8_t ecs = (value & 0xFF00) >> 8;
+          std::string mode_str;
+          switch (ecs) {
+            case 0: mode_str = "Off"; break;
+            case 1: mode_str = "On"; break;
+            case 2: mode_str = "Boost"; break;
+            default: mode_str = "Unknown"; break;
+          }
+          id(mode_ecs_telecommande).publish_state(mode_str);
+
+binary_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: ECS tout électrique
+    register_type: holding
+    address: 20272
+    icon: "mdi:resistor"
+    
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Echangeur eau chaude"
+    device_class: pressure
+    state_class: measurement
+    register_type: holding
+    address: 106
+    value_type: S_WORD
+    unit_of_measurement: "Bar"
+    accuracy_decimals: 2
+    icon: "mdi:gauge" # Icône pour la pression
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Sonde ECS haut"
+    device_class: temperature
+    state_class: measurement
+    register_type: holding
+    address: 111
+    value_type: S_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:coolant-temperature" # Température d'eau chaude sanitaire (ECS)
+    filters:
+      - multiply: 0.01
+
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Sonde ECS bas"
+    device_class: temperature
+    state_class: measurement
+    register_type: holding
+    address: 112
+    value_type: S_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:coolant-temperature"
+    filters:
+      - multiply: 0.01
+
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "ECS ligne liquide Th4"
+    device_class: temperature
+    state_class: measurement
+    register_type: holding
+    address: 113
+    value_type: S_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermometer" # Température échangeur air # Température de la ligne liquide
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Coût eau chaude"
+    register_type: holding
+    address: 21682
+    register_count: 2
+    value_type: U_DWORD
+    device_class: monetary
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "€"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Conso eau chaude"
+    register_type: holding
+    address: 21672
+    register_count: 2
+    value_type: U_DWORD
+    device_class: energy
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "kWh"
+
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Conso eau chaude appoint"
+    register_type: holding
+    address: 21674
+    register_count: 2
+    value_type: U_DWORD
+    device_class: energy
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "kWh"
+
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: consigne_ecs_telecommande_lue
+    name: Consigne ECS télécommande
+    device_class: temperature
+    register_type: holding
+    address: 31002
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    icon: "mdi:thermostat"
+  # --- Registres ECS et Divers (6000+) ---
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Pourcentage ECS"
+    device_class: battery # Utilisation de la classe "battery" pour un pourcentage
+    state_class: measurement
+    register_type: holding
+    address: 6080
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:water-boiler" # Niveau de ballon d'eau chaude
+
+number:
+  - id: !extend registre_9_telecommande
+    on_value:
+        lambda: |-
+            id(update_mode_ecs_telecommande).execute();
+            id(update_mode_air_telecommande).execute();
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: composition_foyer
+    name: "Composition foyer"
+    register_type: holding
+    address: 31007
+    value_type: U_WORD
+    step: 1
+    min_value: 2
+    max_value: 5
+    use_write_multiple: true
+    entity_category: config
+    icon: "mdi:account-group"
+    lambda: return x + 2; 
+    write_lambda: return x - 2;  
+    
+select:
+  - id: !extend test_mode
+    optionsmap:
+      "Aucun": 0
+      "Chauffage": 4
+      "Clim": 5
+      "Eau chaude": 6
+      "Appoint Air 1": 8
+      "Appoint Air 2": 9
+      "Appoint ECS": 10
+      "Tirage au vide": 2
+      "Pump Down": 3
+      "Aéraulique": 11
+
+
+  - platform: template
+    name: "Mode ECS Télécommande"
+    id: mode_ecs_telecommande
+    icon: "mdi:water-boiler"
+    options:
+      - "Off"
+      - "On"
+      - "Boost"
+    #LECTURE (lambda) : Lit l'état du capteur Mode ECS (MSB).
+    lambda: |-
+        id(update_mode_ecs_telecommande).execute();
+        return {};   // La valeur sera publiée par le script
+    #ÉCRITURE (set_action) : Combine le LSB du reg_9 et la nouvelle valeur MSB.
+    set_action:
+      lambda: |-
+        uint16_t new_ecs_mode;
+        if (x == "Off") { new_ecs_mode = 0; }
+        else if (x == "On") { new_ecs_mode = 1; }
+        else if (x == "Boost") { new_ecs_mode = 2; }
+        else { return; } // Arrêt si valeur non reconnue
+
+        // 1. Récupérer la valeur 16-bit actuelle
+        uint16_t current_reg = (uint16_t)id(registre_9_telecommande).state;
+        
+        // 2. Isoler le Mode Air (LSB)
+        uint16_t air_mode_lsb = current_reg & 0x00FF; 
+        
+        // 3. Assemblage : [Nouveau ECS (MSB)] | [Air (LSB)]
+        uint16_t new_ecs_mode_msb = new_ecs_mode << 8;
+        uint16_t new_value = new_ecs_mode_msb | air_mode_lsb; 
+
+        // 4. Écrire la nouvelle valeur complète dans le registre 9
+        auto call = id(registre_9_telecommande).make_call();
+        call.set_value(new_value);
+        call.perform();
+        
+        //Mise à jour de la valeur du select
+        id(update_mode_ecs_telecommande).execute();
+         
+  - id: !extend mode_air_telecommande
+    options:
+      - "Off"
+      - "Confort Chauffage"
+      - "Eco Chauffage"
+      - "Prog A Chauffage"
+      - "Prog B Chauffage"
+      - "Confort Clim"
+      - "Boost Clim"
+      - "Prog C Clim"
+      - "Prog D Clim"
+      - "Ventilation"
+      
+output:
+  - platform: modbus_controller
+    id: reset_anode
+    modbus_controller_id: modbus_telecommande
+    address: 20279
+    register_type: holding
+    value_type: U_WORD
+    use_write_multiple: true
+    write_lambda: |-
+      payload.clear();
+      payload.push_back(0x3);
+      return 0;  // valeur interne, peu importe
+      
+button:
+  - platform: template
+    name: "Reset Anode"
+    icon: "mdi:history"
+    entity_category: config
+    on_press:
+      - output.turn_on:
+          id: reset_anode

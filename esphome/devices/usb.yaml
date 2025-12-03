@@ -1,0 +1,22 @@
+uart:
+    - id: U0
+      tx_pin: GPIO01
+      rx_pin: GPIO03
+      baud_rate: 115200
+      parity: NONE
+      stop_bits: 1
+      rx_buffer_size : 512
+      debug:
+        direction: RX
+        dummy_receiver: true
+        after:
+          # delimiter: "\n"
+          timeout: 100ms 
+        sequence:
+          - lambda: |-
+              static unsigned long previousMillis = 0;
+              unsigned long currentMillis = millis();
+              unsigned long elapsedTime = currentMillis - previousMillis;
+              previousMillis = currentMillis;
+              ESP_LOGD("custom", "Temps écoulé : %lu ms", elapsedTime);
+          - lambda: UARTDebug::log_hex(direction, bytes, ':'); 
