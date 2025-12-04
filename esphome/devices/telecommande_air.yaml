@@ -486,7 +486,237 @@ text_sensor:
         return std::string("Mauvais");
       }
       return std::string("Inconnu");
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: proga
+    name: "Progr. A dataset"
+    entity_category: diagnostic
+    register_type: holding
+    address: 31200
+    register_count: 14
+    response_size: 28
+    raw_encode: HEXBYTES
+    
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: progb
+    name: "Progr. B dataset"
+    entity_category: diagnostic
+    register_type: holding
+    address: 31214
+    register_count: 14
+    response_size: 28
+    raw_encode: HEXBYTES
+    
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: progc
+    name: "Progr. C dataset"
+    entity_category: diagnostic
+    register_type: holding
+    address: 31228
+    register_count: 14
+    response_size: 28
+    raw_encode: HEXBYTES
+    
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: progd
+    name: "Progr. D dataset"
+    entity_category: diagnostic
+    register_type: holding
+    address: 31242
+    register_count: 14
+    response_size: 28
+    raw_encode: HEXBYTES
+  - platform: template
+    name: "Progr. A"
+    id: proga_text
+    icon: "mdi:calendar-multiselect"
+    lambda: |-
+      const char* jours[7] = {
+        "Lundi", "Mardi", "Mercredi", "Jeudi",
+        "Vendredi", "Samedi", "Dimanche"
+      };
 
+      std::string raw = id(proga).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
+      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
+
+      std::string out = "";
+
+      for (int j = 0; j < 7; j++) {
+        // Extraire 4 octets = 8 chars hex
+        std::string hex32 = raw.substr(j * 8, 8);
+
+        // Convertir HEX → uint32
+        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
+
+        // Décodage des plages horaires
+        std::string plages = "";
+        int start = -1;
+        for (int h = 0; h < 24; h++) {
+          bool eco = (mask >> h) & 1;
+          if (eco && start == -1) start = h;
+          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
+          if (end_cond) {
+            int end = eco && h == 23 ? h + 1 : h;
+            if (plages.size()) plages += ", ";
+            plages += to_string(start) + "h-" + to_string(end) + "h";
+            start = -1;
+          }
+        }
+        if (plages.size() == 0) plages = "(aucune)";
+
+        // Ajout au texte final
+        out += jours[j];
+        out += " : ";
+        out += plages;
+        if (j < 6) out += "\n";
+      }
+
+      return out;
+
+  - platform: template
+    name: "Progr. B"
+    id: progb_text
+    icon: "mdi:calendar-multiselect"
+    lambda: |-
+      const char* jours[7] = {
+        "Lundi", "Mardi", "Mercredi", "Jeudi",
+        "Vendredi", "Samedi", "Dimanche"
+      };
+
+      std::string raw = id(progb).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
+      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
+
+      std::string out = "";
+
+      for (int j = 0; j < 7; j++) {
+        // Extraire 4 octets = 8 chars hex
+        std::string hex32 = raw.substr(j * 8, 8);
+
+        // Convertir HEX → uint32
+        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
+
+        // Décodage des plages horaires
+        std::string plages = "";
+        int start = -1;
+        for (int h = 0; h < 24; h++) {
+          bool eco = (mask >> h) & 1;
+          if (eco && start == -1) start = h;
+          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
+          if (end_cond) {
+            int end = eco && h == 23 ? h + 1 : h;
+            if (plages.size()) plages += ", ";
+            plages += to_string(start) + "h-" + to_string(end) + "h";
+            start = -1;
+          }
+        }
+        if (plages.size() == 0) plages = "(aucune)";
+
+        // Ajout au texte final
+        out += jours[j];
+        out += " : ";
+        out += plages;
+        if (j < 6) out += "\n";
+      }
+
+      return out;
+
+  - platform: template
+    name: "Progr. C"
+    id: progc_text
+    icon: "mdi:calendar-multiselect"
+    lambda: |-
+      const char* jours[7] = {
+        "Lundi", "Mardi", "Mercredi", "Jeudi",
+        "Vendredi", "Samedi", "Dimanche"
+      };
+
+      std::string raw = id(progc).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
+      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
+
+      std::string out = "";
+
+      for (int j = 0; j < 7; j++) {
+        // Extraire 4 octets = 8 chars hex
+        std::string hex32 = raw.substr(j * 8, 8);
+
+        // Convertir HEX → uint32
+        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
+
+        // Décodage des plages horaires
+        std::string plages = "";
+        int start = -1;
+        for (int h = 0; h < 24; h++) {
+          bool eco = (mask >> h) & 1;
+          if (eco && start == -1) start = h;
+          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
+          if (end_cond) {
+            int end = eco && h == 23 ? h + 1 : h;
+            if (plages.size()) plages += ", ";
+            plages += to_string(start) + "h-" + to_string(end) + "h";
+            start = -1;
+          }
+        }
+        if (plages.size() == 0) plages = "(aucune)";
+
+        // Ajout au texte final
+        out += jours[j];
+        out += " : ";
+        out += plages;
+        if (j < 6) out += "\n";
+      }
+
+      return out;
+
+  - platform: template
+    name: "Progr. D"
+    id: progd_text
+    icon: "mdi:calendar-multiselect"
+    lambda: |-
+      const char* jours[7] = {
+        "Lundi", "Mardi", "Mercredi", "Jeudi",
+        "Vendredi", "Samedi", "Dimanche"
+      };
+
+      std::string raw = id(progd).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
+      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
+
+      std::string out = "";
+
+      for (int j = 0; j < 7; j++) {
+        // Extraire 4 octets = 8 chars hex
+        std::string hex32 = raw.substr(j * 8, 8);
+
+        // Convertir HEX → uint32
+        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
+
+        // Décodage des plages horaires
+        std::string plages = "";
+        int start = -1;
+        for (int h = 0; h < 24; h++) {
+          bool eco = (mask >> h) & 1;
+          if (eco && start == -1) start = h;
+          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
+          if (end_cond) {
+            int end = eco && h == 23 ? h + 1 : h;
+            if (plages.size()) plages += ", ";
+            plages += to_string(start) + "h-" + to_string(end) + "h";
+            start = -1;
+          }
+        }
+        if (plages.size() == 0) plages = "(aucune)";
+
+        // Ajout au texte final
+        out += jours[j];
+        out += " : ";
+        out += plages;
+        if (j < 6) out += "\n";
+      }
+
+      return out;
+   
 sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
