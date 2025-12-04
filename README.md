@@ -136,16 +136,7 @@ WT32‑ETH01
 
 ## Installation
 
-### 1. Flasher ESPHome
-
-```bash
-esphome run toug.yaml
-```
-
-* Le fichier **toug.yaml** est fourni dans */esphome*.
-* Renseignez vos paramètres réseau (IP statique conseillée).
-
-### 2. Câblage
+### 1. Câblage
 
 1. **Modbus** :Connecteur femelle « Modbus » de la carte mère
 2. **Télécommande** : Connecteur mâle de la télécommande (écran central).
@@ -162,7 +153,7 @@ esphome run toug.yaml
 ![image](https://github.com/user-attachments/assets/21f1d627-101c-4075-81c3-fc9126faa32d)
 
 
-### 3. Jumpers
+### 2. Jumpers
 
 1. **Sélection 12V** : Sélectionne la source de l'alimentation 12V (Télécommande ou Modbus)
 2. **VCC I2C** : Sélectionne la tension à envoyer sur le connecteur I2C (5V ou 3.3V).
@@ -170,7 +161,7 @@ esphome run toug.yaml
 4. **Ref Résistance d'appoint** : Envoie 3.3V ou GND en tant que référence d'entrée pour la détection de la résistance d'appoint (connecteur 9)
 5. **Sélection 5V** : Sélectionne la source de l'alimentation 5V (USB ou conversion 12V)
 
-### 4. Explication Routeur Solaire
+### 3. Explication Routeur Solaire
 
 > **Prérequis** : Le routeur doit être activable et désactivable à distance par ESPhome de la passerelle ou Home Assistant.
 
@@ -193,7 +184,7 @@ Avec le routeur solaire, on peut autoriser le ballon à monter plus haut en temp
 >Si en fin de journée la température ECS dépasse la consigne, la PAC ne se mettra pas en route pour chauffer l'eau, sinon elle complètera le routeur.
 
 
-### 5. Simulation sondes 60°
+### 4. Simulation sondes 60°
 
 > Pour éviter que la PAC se mettre en erreur lorsque la température ECS dépasse 60°, il faut lui faire croire qu'elle ne dépasse pas 60° en simulant de fausses sondes de température NTC 10K.
 
