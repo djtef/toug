@@ -226,7 +226,7 @@ La méthode la plus simple c'est de passer par Home Assistant avec l'addon [ESPh
 * Entrer un nom, par exemple TOUG AIR
 * Choisir ESP32 et faire SKIP
 * Cliquer sur EDIT sur le composant créé
-* Effacer le contenu et le remplacer par le contenu du fichier [tamplate.yaml](esphome/template.yaml) 
+* Effacer le contenu et le remplacer par le contenu du fichier [template.yaml](esphome/template.yaml) 
 * Décommenter :
 1. Le nom du projet à utiliser (toug-air pour un T.ONE AIR ou toug-aquaair pour un T.ONE AquaAIR)
 2. (optionnel) Le nom d'affichage ou la description pour les changer
@@ -234,7 +234,7 @@ La méthode la plus simple c'est de passer par Home Assistant avec l'addon [ESPh
 * Cliquer sur INSTALL
   ![toug](https://github.com/user-attachments/assets/33ecf527-f942-4d90-9b1f-deb57fe7c4df)
 
-La deuxième méthode consiste à utiliser esphome depuis un terminal et suivre les mêmes étapes à partir du [tamplate.yaml](esphome/template.yaml) 
+La deuxième méthode consiste à utiliser esphome depuis un terminal et suivre les mêmes étapes à partir du [template.yaml](esphome/template.yaml) 
 
 ---
 
