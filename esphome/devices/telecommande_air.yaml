@@ -107,13 +107,15 @@ script:
                 id(etat_circuit_frigo).state == "Coil AIR" &&
                 (((int) id(test_id).state == 4) || ((int) id(test_id).state == 5));
           then: 
-            - wait_until:
+            - wait_until: #canaux_actifs
                   condition:
-                    binary_sensor.is_on: etat
+                    lambda: |-
+                      return (int) id(canaux_actifs).state > 0;
                   timeout: 300s
             - if:
                 condition:
-                   binary_sensor.is_on: etat
+                    lambda: |-
+                      return (int) id(canaux_actifs).state > 0;
                 then:
                     - lambda: |-
                         auto call = id(consigne_compresseur_test).make_call();
@@ -1210,6 +1212,13 @@ sensor:
     filters:
       - multiply: 0.01
 
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: canaux_actifs
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 142
   # --- Registres de ventilation et pression (150-160) ---
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1663,7 +1672,7 @@ select:
               # Si l'option choisie n'est PAS "Aucun", on relance le timer
               - if:
                   condition:
-                    lambda: 'return strcmp(id(test_mode).state.c_str(), "Aucun") != 0;'
+                    lambda: 'return strcmp(id(test_mode).current_option(), "Aucun") != 0;'
                   then:
                     - script.execute: auto_stop_test
                     - if:
