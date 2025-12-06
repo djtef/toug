@@ -79,7 +79,6 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Etat 142"
-    id: canaux_actifs
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
