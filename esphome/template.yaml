@@ -44,4 +44,5 @@ packages:
       # - esphome/toug_aquaair_wifi.yaml          #T.One AquaAIR avec connexion wifi
       # - esphome/toug_aquaair_routeur_wifi.yaml  #T.One AquaAIR avec connexion ethernet et routeur solaire
       # - esphome/toug_aquaair_routeur_eth.yaml   #T.One AquaAIR avec connexion wifi et routeur solaire
+      # - esphome/devices/debug.yaml              #Pour aider au debug
 

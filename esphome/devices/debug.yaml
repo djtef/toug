@@ -1,0 +1,100 @@
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat num"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 6
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 29"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 29
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 30"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 30
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 35"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 35
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 47"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 47
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 67"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 67
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 68"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 68
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 69"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 69
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 101"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 101
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 102"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 102
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 137"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 137
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 142"
+    id: canaux_actifs
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 142
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 220"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 220
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Etat 362"
+    entity_category: diagnostic
+    value_type: U_WORD
+    register_type: holding
+    address: 362
