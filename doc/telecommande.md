@@ -56,12 +56,12 @@ Ces registres fournissent des informations sur l'état actuel, les mesures de so
 | 6021          | 0x1785        | État du circuit frigorifique                  | -     | -                                 | 16 bits   | 0: Initialisation, 1: Échangeur ECS, 2: Coil AIR, 3: Standby, 4: Sécurité, 5: Wait. |
 | 6080          | 0x17C0        | Pourcentage ECS                               | %     | -                                 | 16 bits   | Pourcentage de charge/niveau de l'ECS.                                |
 | 20047-20048   | 0x4E4F-0x4E50 | Temps ventilateur ON                          | s     | -                                 | 32 bits   | Temps total de fonctionnement du ventilateur.                         |
-| 20049-20050   | 0x4E51-0x4E52 | Temps compresseur ON                          | s     | -                                 | 32 bits   | Temps total de fonctionnement du compresseur.                            |
+| 20049-20050   | 0x4E51-0x4E52 | Temps compresseur ON                          | s     | -                                 | 32 bits   | Temps total de fonctionnement du compresseur.                         |
 | 20063         | 0x4E5F        | État Filtre                                   | -     | -                                 | 16 bits   | 0-2900: Bon, 2901-4394: Moyen, >4394: Mauvais.                        |
-| 20162         | 0x4EBE        | Défauts #1 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut (voir notes pour correspondances).                    |
-| 20163         | 0x4EBF        | Défauts #2 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut (voir notes pour correspondances).                    |
-| 20164         | 0x4EC0        | Défauts #3 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut (voir notes pour correspondances).                    |
-| 20165         | 0x4EC1        | Défauts #4 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut (voir notes pour correspondances).                    |
+| 20162         | 0x4EBE        | Défauts #1 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut (voir [correspondances](#registres-de-défauts)). |
+| 20163         | 0x4EBF        | Défauts #2 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut(voir [correspondances](#registres-de-défauts)).  |
+| 20164         | 0x4EC0        | Défauts #3 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut (voir [correspondances](#registres-de-défauts)). |
+| 20165         | 0x4EC1        | Défauts #4 (Bitmask)                          | -     | -                                 | 16 BOOL   | 1 booléen par défaut (voir [correspondances](#registres-de-défauts)). |
 | 20272         | 0x4F20        | ECS tout électrique                           | -     | -                                 | BOOL      | État du mode ECS tout électrique.                                     |
 | 30026         | 0x754A        | Nombre de canaux réglés                       | -     | Valeur -1                          | 16 bits  | Nombre de thermostats                                                 |         
 
@@ -207,6 +207,31 @@ Registre 17 = `0x1123`
 | **Hexa**   | `0x01`  | `0x123`          |
 | **Décodé** | 1h    | 291 × 1.875 = 546s (09min 06s) |
 
+### Registres de Défauts
+
+Ces registres contiennent des masques de bits où chaque bit actif correspond à un code défaut spécifique (format hexadécimal).
+
+| Adresse (Dec) | Adresse (Hex) | Description      | Format | Notes |
+|---------------|---------------|------------------|--------|-------|
+| 20162         | 0x4EBE        | Défauts #1       | 16 BOOL| Bit 0-15 → codes défauts |
+| 20163         | 0x4EBF        | Défauts #2       | 16 BOOL| Bit 0-15 → codes défauts |
+| 20164         | 0x4EC0        | Défauts #3       | 16 BOOL| Bit 0-15 → codes défauts |
+| 20165         | 0x4EC1        | Défauts #4       | 16 BOOL| Bit 0-15 → codes défauts |
+
+#### Codes défaut
+
+| Bits     | 15    | 14    | 13    | 12    | 11    | 10    | 9     | 8     | 7     | 6     | 5     | 4     | 3     | 2     | 1     | 0     |
+|----------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
+| **#1 (20162)** | 30    | 0     | 64    | 32    | 25    | 00    | 2D    | 2D    | 20    | 20    | 00    | B0    | 64    | 31     | 30    | 25     |
+| **#2 (20163)** | 00    | 3F    | A3    | A3    | 00    | 24    | 00    | 73    | 6F    | 72    | 75    | 45    | 00    | 2F    | 33    | F1    |
+| **#3 (20164)** | F0    | 7D    | 32    | 31    | 30    | 2E    | 2F    | 34    | 32    | 31    | 30    | 2E    | 2D    | 2C    | 2B    | 2A    |
+| **#4 (20165)** | 29    | 28    | 27    | 26    | 25    | 24    | 23    | 22    | 21    | 20    | 16    | 08    | 76    | 06    | 05    | 75    |
+
+**Utilisation :**
+- Bit `n` = 1 → défaut actif avec code hexadécimal correspondant
+- Chaque registre couvre 16 défauts différents
+
+
 ### Réinitialisation de l'Anode
 
 Un registre permet de réinitialiser le compteur d'anode
@@ -296,4 +321,5 @@ Un registre permet de réinitialiser les compteurs de consommation
 | Adresse (Dec) | Adresse (Hex) | Description                    | Action         | Notes                                                                 |
 |---------------|---------------|--------------------------------|----------------|-----------------------------------------------------------------------|
 | 31017         | 0x7991        | Commande de Reset Consommation | Écrire 0x0001  | Le registre 31017 doit être écrit avec la valeur 1 (0x0001) pour déclencher la réinitialisation des compteurs. |
+
 
