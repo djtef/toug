@@ -12,6 +12,7 @@ script:
             default: mode_str = "Unknown"; break;
           }
           id(mode_ecs_telecommande).publish_state(mode_str);
+          ESP_LOGD("Mode ECS télécommande", "Publish mode ECS %s", mode_str.c_str());
 
 binary_sensor:
   - platform: modbus_controller
@@ -138,7 +139,7 @@ sensor:
 number:
   - id: !extend registre_9_telecommande
     on_value:
-        lambda: |-
+        - lambda: |-
             id(update_mode_ecs_telecommande).execute();
             id(update_mode_air_telecommande).execute();
   - platform: modbus_controller
@@ -183,7 +184,7 @@ select:
     #LECTURE (lambda) : Lit l'état du capteur Mode ECS (MSB).
     lambda: |-
         id(update_mode_ecs_telecommande).execute();
-        return {};   // La valeur sera publiée par le script
+        return std::string(id(mode_ecs_telecommande).current_option());
     #ÉCRITURE (set_action) : Combine le LSB du reg_9 et la nouvelle valeur MSB.
     set_action:
       lambda: |-
@@ -212,17 +213,38 @@ select:
         id(update_mode_ecs_telecommande).execute();
          
   - id: !extend mode_air_telecommande
-    options:
-      - "Off"
-      - "Confort Chauffage"
-      - "Eco Chauffage"
-      - "Prog A Chauffage"
-      - "Prog B Chauffage"
-      - "Confort Clim"
-      - "Boost Clim"
-      - "Prog C Clim"
-      - "Prog D Clim"
-      - "Ventilation"
+    set_action:
+      lambda: |-
+        uint16_t new_air_mode;
+        if (x == "Off") { new_air_mode = 0; }
+        else if (x == "Confort Chauffage") { new_air_mode = 1; }
+        else if (x == "Eco Chauffage") { new_air_mode = 2; }
+        else if (x == "Prog A Chauffage") { new_air_mode = 3; }
+        else if (x == "Prog B Chauffage") { new_air_mode = 4; }
+        else if (x == "Confort Clim") { new_air_mode = 5; }
+        else if (x == "Boost Clim") { new_air_mode = 6; }
+        else if (x == "Prog C Clim") { new_air_mode = 7; }
+        else if (x == "Prog D Clim") { new_air_mode = 8; }
+        else if (x == "Ventilation") { new_air_mode = 9; }
+        else { return; } // Arrêt si valeur non reconnue
+        ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
+        // 1. Récupérer la valeur 16-bit actuelle
+        uint16_t current_reg = (uint16_t)id(registre_9_telecommande).state;
+        
+        // 2. Isoler le Mode ECS (MSB)
+        uint16_t ecs_mode_msb = current_reg & 0xFF00; 
+        
+        // 3. Assemblage : [ECS (MSB)] | [Nouveau Mode AIR (LSB)]
+        uint16_t new_value = ecs_mode_msb | new_air_mode; 
+
+        // 4. Écrire la nouvelle valeur complète dans le registre 9
+        // Utilisation du service Modbus pour écrire un registre
+        auto call = id(registre_9_telecommande).make_call();
+        call.set_value(new_value);
+        call.perform();
+        
+        //Mise à jour de la valeur du select
+        id(update_mode_air_telecommande).execute();
       
 output:
   - platform: modbus_controller

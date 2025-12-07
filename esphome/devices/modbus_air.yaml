@@ -367,7 +367,6 @@ select:
     modbus_controller_id: modbus_user
     name: "Mode Air"
     icon: "mdi:air-conditioner"
-    entity_category: config
     address: 0x007A
     value_type: U_WORD
     use_write_multiple: true

@@ -80,6 +80,8 @@ script:
             default: mode_str = "Unknown"; break;
           }
           id(mode_air_telecommande).publish_state(mode_str);
+          ESP_LOGD("Mode Air télécommande", "Publish state %s", mode_str.c_str());
+
 
   - id: auto_stop_test
     mode: restart
@@ -1571,7 +1573,7 @@ number:
     address: 9
     value_type: U_WORD
     on_value:
-        lambda: |-
+      - lambda: |-
             id(update_mode_air_telecommande).execute();  
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1699,7 +1701,7 @@ select:
       - "Ventilation"
     lambda: |-
       id(update_mode_air_telecommande).execute();
-      return{};
+      return std::string(id(mode_air_telecommande).current_option());
     #ÉCRITURE (set_action) : Combine le MSB du reg_9 et la nouvelle valeur LSB.
     set_action:
       lambda: |-
