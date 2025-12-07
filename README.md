@@ -36,7 +36,7 @@
 ### Communications supportées
 
 * **Modbus utilisateur** (UART) : lecture des registres usuels (modes chauffage/ECS, thermostats, filtres, etc.).
-* **Modbus écran central** (UART secondaire) : accès à des registres avancés normalement invisibles (températures des pièces, pressions du gaz, débits, etc.)
+* **Modbus écran central** (UART secondaire) : accès à des registres avancés normalement invisibles (températures des pièces, pressions du gaz, débits, etc.) [Voir documentation modbus télécommande](https://github.com/djtef/toug/blob/main/doc/telecommande.md)
 * **Interface série passerelle Aldes** (USB) : reverse‑engineering en cours pour remplacer la passerelle officielle AldesConnect® Box via l'USB
 * **Extension I2C** : permet l'ajout de fonctionnalités via le bus I2C
 * **Réseau** : Ethernet ou Wifi
