@@ -109,11 +109,15 @@ script:
                 id(etat_circuit_frigo).state == "Coil AIR" &&
                 (((int) id(test_id).state == 4) || ((int) id(test_id).state == 5));
           then: 
-            - wait_until: #canaux_actifs
-                  condition:
-                    lambda: |-
-                      return (int) id(canaux_actifs).state > 0;
-                  timeout: 300s
+            - wait_until:
+                condition:
+                  lambda: |-
+                    int nb_c = (int) id(nb_canaux).state;
+                    int target_value = pow(2, nb_c + 1) - 1;
+                    return (int) id(canaux_actifs).state > 0 &&
+                           (int) id(registre_30).state >= target_value &&
+                           (int) id(registre_35).state >= target_value;
+                timeout: 300s
             - if:
                 condition:
                     lambda: |-
@@ -1221,6 +1225,18 @@ sensor:
     value_type: U_WORD
     register_type: holding
     address: 142
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_30
+    value_type: U_WORD
+    register_type: holding
+    address: 30
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_35
+    value_type: U_WORD
+    register_type: holding
+    address: 35
   # --- Registres de ventilation et pression (150-160) ---
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1249,6 +1265,7 @@ sensor:
   # --- Registres de configuration (30000+) ---
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: nb_canaux
     name: "Nombre de canaux réglés"
     register_type: holding
     address: 30026
