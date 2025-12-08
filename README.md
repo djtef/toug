@@ -218,10 +218,12 @@ La méthode la plus simple c'est de passer par Home Assistant avec l'addon [ESPh
 * Choisir ESP32 et faire SKIP
 * Cliquer sur EDIT sur le composant créé
 * Effacer le contenu et le remplacer par le contenu du fichier [template.yaml](esphome/template.yaml) 
-* Décommenter :
-1. Le nom du projet à utiliser (toug-air pour un T.ONE AIR ou toug-aquaair pour un T.ONE AquaAIR)
-2. (optionnel) Le nom d'affichage ou la description pour les changer
-3. La configuration souhaitée (T.One AIR/AquaAir, wifi/ether, avec/sans routeur)
+* Suivre les 5 étapes :
+1. `TOne:` `air` pour un T.ONE AIR ou `aquaair` pour un T.ONE AquaAIR
+2. `nombre_thermostats:` Définir le nombre de thermostats associés au T.One (entre 1 et 9)
+3. (optionnel) Décommenter `name:` et/ou `description:` pour remplacer les valeurs par défaut
+4. (optionnel) Décommenter les cannaux `K1a` à `K8` pour personnaliser leur nom (par pièces par exemple)
+5. Décommenter la configuration à télécharger
 * Cliquer sur INSTALL
   ![toug](https://github.com/user-attachments/assets/33ecf527-f942-4d90-9b1f-deb57fe7c4df)
 
