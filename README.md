@@ -233,6 +233,7 @@ La deuxième méthode consiste à utiliser esphome depuis un terminal et suivre 
 
 ## Intégration Home Assistant
 
+### Ajouter un thermostat
 Installer hass-template-climate dans HACS et ajouter la configuration Yaml
 
 Exemple:
@@ -364,6 +365,74 @@ Voici le résultat :
 ![climate2](/doc/images/climate2.png)
 
 ![climate3](/doc/images/climate3.png)
+
+### Ajouter la programmation horaire
+
+Avec la télécommande du T.One il est possible de définir heure par heure si la clim ou le chauffage doit être activé ou en éco (off pour la clim). Il existe 2 programmes pour le chauffage (A et B), et 2 pour la clim (C et D)
+<img width="652" height="516" alt="image" src="https://github.com/user-attachments/assets/4d1751d2-d0e8-4494-b2b6-2d8e93c67d29" />
+
+La programmation horaire a été intégrée dans la TOUG :
+- En lecture
+  - Au format texte
+  ```
+  Lundi : 7h-9h, 17h-22h
+  Mardi : 7h-9h, 17h-22h
+  Mercredi : 7h-9h, 17h-22h
+  Jeudi : 7h-9h, 17h-22h
+  Vendredi : 7h-9h, 17h-22h
+  Samedi : 8h-22h
+  Dimanche : 8h-22h
+  ```
+  - En représentation hexa du contenu des registres (voir [explications](#21-registres-de-programmation-horaire-prog-a-b-c-d))
+    
+  `003e0180003e0180003e0180003e0180003e0180003fff00003fff00`
+- En écriture via l'api
+  ```yaml
+      - action: change_prog
+        variables:
+          prog: string
+          dataset: string
+  ```
+  - prog : A, B, C ou D
+  - dataset : représentation hexa du contenu des registres
+ 
+Côté Home Assistant, une implémentation possible est d'utiliser la custom card [button-card](https://github.com/custom-cards/button-card)
+1. Créer 4 entrées "saisie de texte" (helpers input_text) qui seront la représentation de l'IHM en hexa pour chaque programme
+```yaml
+input_text:
+  progA_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progB_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progC_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progD_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+```
+2. Créer 4 entrées Template Capteur (sensor template) qui représenteront l'état de la synchro entre ESPHome et Home Assistant :
+   - synchro : Home Assistant et ESPhome sont synchronisés
+   - maj : Mise à jour en cours, attente retour ESPHome
+   - dataset : ESPhome a été mis à jour
+   - buffer : Home Assistant est en train de changer la valeur via l'IHM
+   
+
+
 
 ---
 
