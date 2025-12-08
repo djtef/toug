@@ -326,7 +326,7 @@ climate:
               Off
             {% endif %}
     hvac_action_template: >-
-      {% if is_state('binary_sensor.bouche_k1a', 'off') %}
+      {% if is_state('binary_sensor.canal_k1a', 'off') %}
         off
       {% elif 'Chauffage' in states('select.mode_air') %}
         heating
@@ -348,11 +348,11 @@ climate:
       {% else %} 
           24        {##  pas vraiment besoin  ##} 
       {% endif %}
-    target_temperature_template: "{{ states('number.thermostat_1') }}" 
+    target_temperature_template: "{{ states('number.thermostat_k1a') }}" 
     set_temperature:
       - action: number.set_value
         data:
-          entity_id: number.thermostat_1  
+          entity_id: number.thermostat_k1a  
           value: "{{ temperature }}"
 ```
 Voici le résultat :
