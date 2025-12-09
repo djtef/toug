@@ -576,60 +576,6 @@ template:
     alias: Copie dataset ESPHome vers buffer HA
   mode: single`
 ```
-template:
-  - sensor:
-      - name: "progc_synchro"
-        state: >
-          {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_a_dataset') %}
-          synchro
-          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
-          {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
-          buffer
-          {% else %}
-          maj
-          {% endif %}
-          {% else %}
-          dataset
-          {% endif %}
-      - name: "progb_synchro"
-        state: >
-          {% if states('input_text.progb_buffer') == states('sensor.toug_aquaair_progr_b_dataset') %}
-          synchro
-          {% elif  states.input_text.progb_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
-          {% if  states.input_text.progb_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
-          buffer
-          {% else %}
-          maj
-          {% endif %}
-          {% else %}
-          dataset
-          {% endif %}
-      - name: "progc_synchro"
-        state: >
-          {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_c_dataset') %}
-          synchro
-          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
-          {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
-          buffer
-          {% else %}
-          maj
-          {% endif %}
-          {% else %}
-          dataset
-          {% endif %}   
-      - name: "progd_synchro"
-        state: >
-          {% if states('input_text.progd_buffer') == states('sensor.toug_aquaair_progr_d_dataset') %}
-          synchro
-          {% elif  states.input_text.progd_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
-          {% if  states.input_text.progd_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
-          buffer
-          {% else %}
-          maj
-          {% endif %}
-          {% else %}
-          dataset
-          {% endif %}
 
 5. Ajouter une vue au dashboard en copiant le contenu de [dashboard_prog.yaml](ha/dashboard_prog.yaml) dans l'éditeur de configuration du dashboard de Home Assistant:
 <img width="265" height="238" alt="image" src="https://github.com/user-attachments/assets/fd5d49ec-d8bd-496c-b97f-57ceab0bc328" />
