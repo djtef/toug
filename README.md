@@ -36,7 +36,7 @@
 ### Communications supportées
 
 * **Modbus utilisateur** (UART) : lecture des registres usuels (modes chauffage/ECS, thermostats, filtres, etc.).
-* **Modbus écran central** (UART secondaire) : accès à des registres avancés normalement invisibles (températures des pièces, pressions du gaz, débits, etc.)
+* **Modbus écran central** (UART secondaire) : accès à des registres avancés normalement invisibles (températures des pièces, pressions du gaz, débits, etc.) [Voir documentation modbus télécommande](https://github.com/djtef/toug/blob/main/doc/telecommande.md)
 * **Interface série passerelle Aldes** (USB) : reverse‑engineering en cours pour remplacer la passerelle officielle AldesConnect® Box via l'USB
 * **Extension I2C** : permet l'ajout de fonctionnalités via le bus I2C
 * **Réseau** : Ethernet ou Wifi
@@ -218,10 +218,12 @@ La méthode la plus simple c'est de passer par Home Assistant avec l'addon [ESPh
 * Choisir ESP32 et faire SKIP
 * Cliquer sur EDIT sur le composant créé
 * Effacer le contenu et le remplacer par le contenu du fichier [template.yaml](esphome/template.yaml) 
-* Décommenter :
-1. Le nom du projet à utiliser (toug-air pour un T.ONE AIR ou toug-aquaair pour un T.ONE AquaAIR)
-2. (optionnel) Le nom d'affichage ou la description pour les changer
-3. La configuration souhaitée (T.One AIR/AquaAir, wifi/ether, avec/sans routeur)
+* Suivre les 5 étapes :
+1. `TOne:` `air` pour un T.ONE AIR ou `aquaair` pour un T.ONE AquaAIR
+2. `nombre_thermostats:` Définir le nombre de thermostats associés au T.One (entre 1 et 9)
+3. (optionnel) Décommenter `name:` et/ou `description:` pour remplacer les valeurs par défaut
+4. (optionnel) Décommenter les cannaux `K1a` à `K8` pour personnaliser leur nom (par pièces par exemple)
+5. Décommenter la configuration à télécharger
 * Cliquer sur INSTALL
   ![toug](https://github.com/user-attachments/assets/33ecf527-f942-4d90-9b1f-deb57fe7c4df)
 
@@ -231,6 +233,7 @@ La deuxième méthode consiste à utiliser esphome depuis un terminal et suivre 
 
 ## Intégration Home Assistant
 
+### Ajouter un thermostat
 Installer hass-template-climate dans HACS et ajouter la configuration Yaml
 
 Exemple:
@@ -326,7 +329,7 @@ climate:
               Off
             {% endif %}
     hvac_action_template: >-
-      {% if is_state('binary_sensor.bouche_k1a', 'off') %}
+      {% if is_state('binary_sensor.canal_k1a', 'off') %}
         off
       {% elif 'Chauffage' in states('select.mode_air') %}
         heating
@@ -348,11 +351,11 @@ climate:
       {% else %} 
           24        {##  pas vraiment besoin  ##} 
       {% endif %}
-    target_temperature_template: "{{ states('number.thermostat_1') }}" 
+    target_temperature_template: "{{ states('number.thermostat_k1a') }}" 
     set_temperature:
       - action: number.set_value
         data:
-          entity_id: number.thermostat_1  
+          entity_id: number.thermostat_k1a  
           value: "{{ temperature }}"
 ```
 Voici le résultat :
@@ -362,6 +365,74 @@ Voici le résultat :
 ![climate2](/doc/images/climate2.png)
 
 ![climate3](/doc/images/climate3.png)
+
+### Ajouter la programmation horaire
+
+Avec la télécommande du T.One il est possible de définir heure par heure si la clim ou le chauffage doit être activé ou en éco (off pour la clim). Il existe 2 programmes pour le chauffage (A et B), et 2 pour la clim (C et D)
+<img width="652" height="516" alt="image" src="https://github.com/user-attachments/assets/4d1751d2-d0e8-4494-b2b6-2d8e93c67d29" />
+
+La programmation horaire a été intégrée dans la TOUG :
+- En lecture
+  - Au format texte
+  ```
+  Lundi : 7h-9h, 17h-22h
+  Mardi : 7h-9h, 17h-22h
+  Mercredi : 7h-9h, 17h-22h
+  Jeudi : 7h-9h, 17h-22h
+  Vendredi : 7h-9h, 17h-22h
+  Samedi : 8h-22h
+  Dimanche : 8h-22h
+  ```
+  - En représentation hexa du contenu des registres (voir [explications](#21-registres-de-programmation-horaire-prog-a-b-c-d))
+    
+  `003e0180003e0180003e0180003e0180003e0180003fff00003fff00`
+- En écriture via l'api
+  ```yaml
+      - action: change_prog
+        variables:
+          prog: string
+          dataset: string
+  ```
+  - prog : A, B, C ou D
+  - dataset : représentation hexa du contenu des registres
+ 
+Côté Home Assistant, une implémentation possible est d'utiliser la custom card [button-card](https://github.com/custom-cards/button-card)
+1. Créer 4 entrées "saisie de texte" (helpers input_text) qui seront la représentation de l'IHM en hexa pour chaque programme
+```yaml
+input_text:
+  progA_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progB_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progC_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progD_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+```
+2. Créer 4 entrées Template Capteur (sensor template) qui représenteront l'état de la synchro entre ESPHome et Home Assistant :
+   - synchro : Home Assistant et ESPhome sont synchronisés
+   - maj : Mise à jour en cours, attente retour ESPHome
+   - dataset : ESPhome a été mis à jour
+   - buffer : Home Assistant est en train de changer la valeur via l'IHM
+   
+
+
 
 ---
 
