@@ -481,7 +481,7 @@ input_text:
     pattern: "[0-9A-Fa-f]+"
     mode: text
 ```
-3. Créer 4 entrées Template Capteur via l'IHM ou ya [yaml](ha/helpers.yaml) (sensor template) qui représenteront l'état de la synchro entre ESPHome et Home Assistant :
+3. Créer 4 entrées Template Capteur via l'IHM ou en [yaml](ha/helpers.yaml) (sensor template) qui représenteront l'état de la synchro entre ESPHome et Home Assistant :
    - synchro : Home Assistant et ESPhome sont synchronisés
    - maj : Mise à jour en cours, attente retour ESPHome
    - dataset : ESPhome a été mis à jour
