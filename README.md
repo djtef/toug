@@ -385,7 +385,7 @@ La programmation horaire a été intégrée dans la TOUG :
   Samedi : 8h-22h
   Dimanche : 8h-22h
   ```
-  - En représentation hexa du contenu des registres (voir [explications](#21-registres-de-programmation-horaire-prog-a-b-c-d))
+  - En représentation hexa du contenu des registres (voir [explications](doc/telecommande.md#21-registres-de-programmation-horaire-prog-a-b-c-d))
     
   `003e0180003e0180003e0180003e0180003e0180003fff00003fff00`
 - En écriture via l'api
