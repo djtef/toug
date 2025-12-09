@@ -1,0 +1,44 @@
+description: Envoie la programmation horaire au T.One
+fields:
+  prog:
+    description: Nom de la programmation (A,B,C ou D)
+    example: A
+    selector:
+      select:
+        options:
+          - A
+          - B
+          - C
+          - D
+    required: true
+  direction:
+    description: Direction de la synchro
+    example: esphome_vers_ha
+    default: esphome_vers_ha
+    required: true
+    selector:
+      select:
+        options:
+          - esphome_vers_ha
+          - ha_vers_esphome
+sequence:
+  - variables:
+      buffer_entity: "{{ 'input_text.prog' ~ prog | lower ~ '_buffer' }}"
+      dataset_entity: "{{ 'sensor.toug_aquaair_progr_' ~ prog | lower ~ '_dataset' }}"
+      buffer: "{{ states(buffer_entity) }}"
+      dataset: "{{ states(dataset_entity) }}"
+  - if:
+      - condition: template
+        value_template: "{{ direction == 'ha_vers_esphome' }}"
+    then:
+      - action: esphome.toug_aquaair_change_prog
+        data:
+          prog: "{{ prog }}"
+          dataset: "{{ states(buffer_entity) }}"
+    else:
+      - action: input_text.set_value
+        target:
+          entity_id: "{{ buffer_entity }}"
+        data:
+          value: "{{ states(dataset_entity) }}"
+alias: envoie_prog

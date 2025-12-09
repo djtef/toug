@@ -1,0 +1,31 @@
+  alias: Synchro prog T.One
+  description: Met à jour la programmation horaire du T.One vers Home Assitant
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.proga_synchro
+    to: dataset
+    id: A
+  - trigger: state
+    entity_id:
+    - sensor.progb_synchro
+    to: dataset
+    id: B
+  - trigger: state
+    entity_id:
+    - sensor.progc_synchro
+    to: dataset
+    id: C
+  - trigger: state
+    entity_id:
+    - sensor.progd_synchro
+    to: dataset
+    id: D
+  actions:
+  - action: script.envoie_prog
+    metadata: {}
+    data:
+      prog: '{{ trigger.id }}'
+      direction: esphome_vers_ha
+    alias: Copie dataset ESPHome vers buffer HA
+  mode: single`

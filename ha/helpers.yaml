@@ -1,0 +1,80 @@
+input_text:
+  progA_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progB_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progC_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+  progD_buffer:
+    name: progA_buffer
+    min: 56
+    max: 56
+    pattern: "[0-9A-Fa-f]+"
+    mode: text
+    
+template:
+  - sensor:
+      - name: "progc_synchro"
+        state: >
+          {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_a_dataset') %}
+          synchro
+          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}
+      - name: "progb_synchro"
+        state: >
+          {% if states('input_text.progb_buffer') == states('sensor.toug_aquaair_progr_b_dataset') %}
+          synchro
+          {% elif  states.input_text.progb_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progb_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}
+      - name: "progc_synchro"
+        state: >
+          {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_c_dataset') %}
+          synchro
+          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}   
+      - name: "progd_synchro"
+        state: >
+          {% if states('input_text.progd_buffer') == states('sensor.toug_aquaair_progr_d_dataset') %}
+          synchro
+          {% elif  states.input_text.progd_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progd_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}      
