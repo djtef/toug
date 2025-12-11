@@ -371,6 +371,8 @@ Voici le résultat :
 Avec la télécommande du T.One il est possible de définir heure par heure si la clim ou le chauffage doit être activé ou en éco (off pour la clim). Il existe 2 programmes pour le chauffage (A et B), et 2 pour la clim (C et D)
 <img width="652" height="516" alt="image" src="https://github.com/user-attachments/assets/4d1751d2-d0e8-4494-b2b6-2d8e93c67d29" />
 
+
+#### Integration dans ESPHome
 La programmation horaire a été intégrée dans la TOUG :
 - En lecture
   - Au format texte
@@ -383,7 +385,7 @@ La programmation horaire a été intégrée dans la TOUG :
   Samedi : 8h-22h
   Dimanche : 8h-22h
   ```
-  - En représentation hexa du contenu des registres (voir [explications](#21-registres-de-programmation-horaire-prog-a-b-c-d))
+  - En représentation hexa du contenu des registres (voir [explications](doc/telecommande.md#21-registres-de-programmation-horaire-prog-a-b-c-d))
     
   `003e0180003e0180003e0180003e0180003e0180003fff00003fff00`
 - En écriture via l'api
@@ -395,9 +397,63 @@ La programmation horaire a été intégrée dans la TOUG :
   ```
   - prog : A, B, C ou D
   - dataset : représentation hexa du contenu des registres
- 
+
+#### Integration dans Home Assistant 
 Côté Home Assistant, une implémentation possible est d'utiliser la custom card [button-card](https://github.com/custom-cards/button-card)
-1. Créer 4 entrées "saisie de texte" (helpers input_text) qui seront la représentation de l'IHM en hexa pour chaque programme
+
+**Note :** dans cet exemple le nom esphome de la TOUG est `toug_aquaair`, les entités commencent donc par `toug_aquaair_`, à remplacer selon les cas.
+
+Tout le code yaml présenté ici est dans le dossier [ha](ha).
+
+1. Créer un script [envoie_prog](ha/scripts.yaml) pour synchroniser la programmation horaire entre Home Assistant et Esphome (dans les deux sens)
+```yaml
+description: Envoie la programmation horaire au T.One
+fields:
+  prog:
+    description: Nom de la programmation (A,B,C ou D)
+    example: A
+    selector:
+      select:
+        options:
+          - A
+          - B
+          - C
+          - D
+    required: true
+  direction:
+    description: Direction de la synchro
+    example: esphome_vers_ha
+    default: esphome_vers_ha
+    required: true
+    selector:
+      select:
+        options:
+          - esphome_vers_ha
+          - ha_vers_esphome
+sequence:
+  - variables:
+      buffer_entity: "{{ 'input_text.prog' ~ prog | lower ~ '_buffer' }}"
+      dataset_entity: "{{ 'sensor.toug_aquaair_progr_' ~ prog | lower ~ '_dataset' }}"
+      buffer: "{{ states(buffer_entity) }}"
+      dataset: "{{ states(dataset_entity) }}"
+  - if:
+      - condition: template
+        value_template: "{{ direction == 'ha_vers_esphome' }}"
+    then:
+      - action: esphome.toug_aquaair_change_prog
+        data:
+          prog: "{{ prog }}"
+          dataset: "{{ states(buffer_entity) }}"
+    else:
+      - action: input_text.set_value
+        target:
+          entity_id: "{{ buffer_entity }}"
+        data:
+          value: "{{ states(dataset_entity) }}"
+alias: envoie_prog
+```
+
+2. Créer 4 entrées "saisie de texte" via l'IHM ou en [yaml](ha/helpers.yaml) (helpers input_text) qui seront la représentation de l'IHM en hexa pour chaque programme
 ```yaml
 input_text:
   progA_buffer:
@@ -425,13 +481,107 @@ input_text:
     pattern: "[0-9A-Fa-f]+"
     mode: text
 ```
-2. Créer 4 entrées Template Capteur (sensor template) qui représenteront l'état de la synchro entre ESPHome et Home Assistant :
+3. Créer 4 entrées Template Capteur via l'IHM ou en [yaml](ha/helpers.yaml) (sensor template) qui représenteront l'état de la synchro entre ESPHome et Home Assistant :
    - synchro : Home Assistant et ESPhome sont synchronisés
    - maj : Mise à jour en cours, attente retour ESPHome
    - dataset : ESPhome a été mis à jour
    - buffer : Home Assistant est en train de changer la valeur via l'IHM
-   
+```yaml
+template:
+  - sensor:
+      - name: "progc_synchro"
+        state: >
+          {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_a_dataset') %}
+          synchro
+          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}
+      - name: "progb_synchro"
+        state: >
+          {% if states('input_text.progb_buffer') == states('sensor.toug_aquaair_progr_b_dataset') %}
+          synchro
+          {% elif  states.input_text.progb_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progb_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}
+      - name: "progc_synchro"
+        state: >
+          {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_c_dataset') %}
+          synchro
+          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}   
+      - name: "progd_synchro"
+        state: >
+          {% if states('input_text.progd_buffer') == states('sensor.toug_aquaair_progr_d_dataset') %}
+          synchro
+          {% elif  states.input_text.progd_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.progd_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          buffer
+          {% else %}
+          maj
+          {% endif %}
+          {% else %}
+          dataset
+          {% endif %}      
+```
+4. Créer une automatisation [Synchro prog T.One](ha/automations.yaml)
+```yaml
+  alias: Synchro prog T.One
+  description: Met à jour la programmation horaire du T.One vers Home Assitant
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.proga_synchro
+    to: dataset
+    id: A
+  - trigger: state
+    entity_id:
+    - sensor.progb_synchro
+    to: dataset
+    id: B
+  - trigger: state
+    entity_id:
+    - sensor.progc_synchro
+    to: dataset
+    id: C
+  - trigger: state
+    entity_id:
+    - sensor.progd_synchro
+    to: dataset
+    id: D
+  actions:
+  - action: script.envoie_prog
+    metadata: {}
+    data:
+      prog: '{{ trigger.id }}'
+      direction: esphome_vers_ha
+    alias: Copie dataset ESPHome vers buffer HA
+  mode: single`
+```
 
+5. Ajouter une vue au dashboard en copiant le contenu de [dashboard_prog.yaml](ha/dashboard_prog.yaml) dans l'éditeur de configuration du dashboard de Home Assistant:
+<img width="265" height="238" alt="image" src="https://github.com/user-attachments/assets/fd5d49ec-d8bd-496c-b97f-57ceab0bc328" />
+
+On obtient ainsi un équivalent de la programmation horaire de la télécommande directement dans Home Assistant qu'on peut synchroniser avec ESPHome et donc le T.One
+![proga_fin](https://github.com/user-attachments/assets/20f86a33-8761-4ac3-a50d-f0f8f6cab2fa)
 
 
 ---
