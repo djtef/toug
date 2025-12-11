@@ -28,4 +28,4 @@
       prog: '{{ trigger.id }}'
       direction: esphome_vers_ha
     alias: Copie dataset ESPHome vers buffer HA
-  mode: single`
+  mode: single
