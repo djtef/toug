@@ -463,19 +463,19 @@ input_text:
     pattern: "[0-9A-Fa-f]+"
     mode: text
   progB_buffer:
-    name: progA_buffer
+    name: progB_buffer
     min: 56
     max: 56
     pattern: "[0-9A-Fa-f]+"
     mode: text
   progC_buffer:
-    name: progA_buffer
+    name: progC_buffer
     min: 56
     max: 56
     pattern: "[0-9A-Fa-f]+"
     mode: text
   progD_buffer:
-    name: progA_buffer
+    name: progD_buffer
     min: 56
     max: 56
     pattern: "[0-9A-Fa-f]+"
@@ -489,12 +489,12 @@ input_text:
 ```yaml
 template:
   - sensor:
-      - name: "progc_synchro"
+      - name: "proga_synchro"
         state: >
-          {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_a_dataset') %}
+          {% if states('input_text.proga_buffer') == states('sensor.toug_aquaair_progr_a_dataset') %}
           synchro
-          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
-          {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
+          {% elif  states.input_text.proga_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% if  states.input_text.proga_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
           buffer
           {% else %}
           maj
@@ -542,7 +542,20 @@ template:
           dataset
           {% endif %}      
 ```
-4. Créer une automatisation [Synchro prog T.One](ha/automations.yaml)
+4. Créer une entrée liste déroulante (via IHM) ou un input_select par yaml:
+```yaml
+input_select:
+  programmation_horaire:
+    name: Programmation horaire
+    options:
+      - Chauffage Progr. A
+      - Chauffage Progr. B
+      - Rafraîchissement Progr. C
+      - Rafraîchissement Progr. C
+    initial: Chauffage Progr. A
+    icon: mdi:calendar-blank-multiple
+```
+5. Créer une automatisation [Synchro prog T.One](ha/automations.yaml)
 ```yaml
   alias: Synchro prog T.One
   description: Met à jour la programmation horaire du T.One vers Home Assitant
@@ -574,10 +587,10 @@ template:
       prog: '{{ trigger.id }}'
       direction: esphome_vers_ha
     alias: Copie dataset ESPHome vers buffer HA
-  mode: single`
+  mode: single
 ```
 
-5. Ajouter une vue au dashboard en copiant le contenu de [dashboard_prog.yaml](ha/dashboard_prog.yaml) dans l'éditeur de configuration du dashboard de Home Assistant:
+6. Ajouter une vue au dashboard en copiant le contenu de [dashboard_prog.yaml](ha/dashboard_prog.yaml) dans l'éditeur de configuration du dashboard de Home Assistant:
 <img width="265" height="238" alt="image" src="https://github.com/user-attachments/assets/fd5d49ec-d8bd-496c-b97f-57ceab0bc328" />
 
 On obtient ainsi un équivalent de la programmation horaire de la télécommande directement dans Home Assistant qu'on peut synchroniser avec ESPHome et donc le T.One
