@@ -493,7 +493,7 @@ template:
         state: >
           {% if states('input_text.proga_buffer') == states('sensor.toug_aquaair_progr_a_dataset') %}
           synchro
-          {% elif  states.input_text.proga_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% elif  states.input_text.proga_buffer.last_changed > states.sensor.toug_aquaair_progr_a_dataset.last_changed %}
           {% if  states.input_text.proga_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
           buffer
           {% else %}
@@ -506,7 +506,7 @@ template:
         state: >
           {% if states('input_text.progb_buffer') == states('sensor.toug_aquaair_progr_b_dataset') %}
           synchro
-          {% elif  states.input_text.progb_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% elif  states.input_text.progb_buffer.last_changed > states.sensor.toug_aquaair_progr_b_dataset.last_changed %}
           {% if  states.input_text.progb_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
           buffer
           {% else %}
@@ -519,7 +519,7 @@ template:
         state: >
           {% if states('input_text.progc_buffer') == states('sensor.toug_aquaair_progr_c_dataset') %}
           synchro
-          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% elif  states.input_text.progc_buffer.last_changed > states.sensor.toug_aquaair_progr_c_dataset.last_changed %}
           {% if  states.input_text.progc_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
           buffer
           {% else %}
@@ -532,7 +532,7 @@ template:
         state: >
           {% if states('input_text.progd_buffer') == states('sensor.toug_aquaair_progr_d_dataset') %}
           synchro
-          {% elif  states.input_text.progd_buffer.last_changed > states.sensor.toug_aquaair.last_changed %}
+          {% elif  states.input_text.progd_buffer.last_changed > states.sensor.toug_aquaair_progr_d_dataset.last_changed %}
           {% if  states.input_text.progd_buffer.last_changed > state_attr('script.envoie_prog','last_triggered') %}
           buffer
           {% else %}
