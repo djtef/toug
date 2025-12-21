@@ -205,7 +205,7 @@ sensor:
 number:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K1a"
+    name: "Thermostat ${K1a}"
     id: thermostat_k1a
     icon: "mdi:thermostat"
     entity_category: config
@@ -218,7 +218,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K1b"
+    name: "Thermostat ${K1b}"
     id: thermostat_k1b
     icon: "mdi:thermostat"
     entity_category: config
@@ -231,7 +231,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K2"
+    name: "Thermostat ${K2}"
     id: thermostat_k2
     icon: "mdi:thermostat"
     entity_category: config
@@ -244,7 +244,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K3"
+    name: "Thermostat ${K3}"
     id: thermostat_k3
     icon: "mdi:thermostat"
     entity_category: config
@@ -257,7 +257,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K4"
+    name: "Thermostat ${K4}"
     id: thermostat_k4
     icon: "mdi:thermostat"
     entity_category: config
@@ -270,7 +270,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K5"
+    name: "Thermostat ${K5}"
     id: thermostat_k5
     icon: "mdi:thermostat"
     entity_category: config
@@ -283,7 +283,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K6"
+    name: "Thermostat ${K6}"
     id: thermostat_k6
     icon: "mdi:thermostat"
     entity_category: config
@@ -296,7 +296,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K7"
+    name: "Thermostat ${K7}"
     id: thermostat_k7
     icon: "mdi:thermostat"
     entity_category: config
@@ -309,7 +309,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K8"
+    name: "Thermostat ${K8}"
     id: thermostat_k8
     icon: "mdi:thermostat"
     entity_category: config
@@ -322,7 +322,7 @@ number:
     multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
-    name: "Thermostat K9"
+    name: "Thermostat ${K9}"
     id: thermostat_k9
     icon: "mdi:thermostat"
     entity_category: config
@@ -361,7 +361,15 @@ number:
     use_write_multiple: true
     multiply: 1000
     step: 0.001
-    
+# Supprime les canaux non utilisées (Solution pour le 'null')
+  - id: !remove ${nombre_thermostats | int < 2 and "thermostat_k2"}
+  - id: !remove ${nombre_thermostats | int < 3 and "thermostat_k3"}
+  - id: !remove ${nombre_thermostats | int < 4 and "thermostat_k4"}
+  - id: !remove ${nombre_thermostats | int < 5 and "thermostat_k5"}
+  - id: !remove ${nombre_thermostats | int < 6 and "thermostat_k6"}
+  - id: !remove ${nombre_thermostats | int < 7 and "thermostat_k7"}
+  - id: !remove ${nombre_thermostats | int < 8 and "thermostat_k8"}
+  
 select:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
