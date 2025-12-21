@@ -19,6 +19,7 @@ substitutions:
   K6: K6
   K7: K7
   K8: K8
+  K9: K9
 
 binary_sensor:
   - platform: gpio

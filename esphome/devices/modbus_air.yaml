@@ -369,6 +369,7 @@ number:
   - id: !remove ${nombre_thermostats | int < 6 and "thermostat_k6"}
   - id: !remove ${nombre_thermostats | int < 7 and "thermostat_k7"}
   - id: !remove ${nombre_thermostats | int < 8 and "thermostat_k8"}
+  - id: !remove ${nombre_thermostats | int < 9 and "thermostat_k9"}
   
 select:
   - platform: modbus_controller
