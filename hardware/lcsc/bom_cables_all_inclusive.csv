@@ -1,0 +1,11 @@
+Quantity,Manufacture Part Number,Manufacturer(optional),Description(optional),LCSC Part Number(optional),Package(optional),Customer Part Number(optional)
+3,XHP-4,JST,Connector Housing 4 Position 2.5mm Pitch Single Row XH Series PA6 -25?~+85?,C144403,P=2.5mm,W1- W2
+2,XAP-04V-1,JST,Connector Housing 4 Position 2.5mm Pitch Single Row XA Series PA66 -25?~+85?,C111519,P=2.5mm,W3- W4
+1,XARR-04V,JST,Connector Housing 4 Position 2.5mm Pitch Single Row XA Series PA66 -25?~+85?,C163010,P=2.5mm,W5
+15,JST SXH-001T-P0.6,JST,Connector Terminal XH Tin 22~28 AWG Crimp,C140573,_,W6
+10,JST SXAM-001T-P0.6,JST,Connector Terminal XA XAD XAG Tin 22~28 AWG Crimp,C392091,_,W7
+20,JST SXA-001T-P0.6,JST,Connector Terminal XA XAD XM Tin 22~28 AWG Crimp,C246759,_,W8
+2,JST XAP-06V-1,JST,Connector Housing 6 Position 2.5mm Pitch Single Row XA Series PA66 -25?~+85?,C264027,P=2.5mm,W9
+1,JST XARR-06V,JST,Connector Housing 6 Position 2.5mm Pitch Single Row XA Series PA66 -25?~+85?,C595537,P=2.5mm,W10
+
+
