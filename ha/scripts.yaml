@@ -1,44 +1,76 @@
-description: Envoie la programmation horaire au T.One
-fields:
-  prog:
-    description: Nom de la programmation (A,B,C ou D)
-    example: A
-    selector:
-      select:
-        options:
+toggle_prog_bit:
+  sequence:
+  - variables:
+      buffer_entity: '{{ ''input_text.prog'' + prog + ''_buffer'' }}'
+      buffer: '{{ states(buffer_entity) }}'
+      byte_index: '{{ 4 * (index // 24)  + 3 - (index % 24 // 8)| int }}'
+      bit_index: '{{ (index % 8) | int }}'
+      old_byte_str: '{{ buffer[byte_index*2 : byte_index*2 + 2] | string }}'
+      old_byte_val: '{{ int(old_byte_str | string, 0, 16) }}'
+      bit_val: '{{ (old_byte_val // (2 ** bit_index)) % 2 }}'
+      new_byte_val: "{% if bit_val == 1 %}\n  {{ (old_byte_val - (2 ** bit_index))
+        }}\n{% else %}\n  {{ (old_byte_val + (2 ** bit_index)) }}\n{% endif %}"
+      new_byte: '{{ ''{:02X}''.format(new_byte_val|int) | lower }}'
+      new_buf: '{{ buffer[:byte_index*2] ~ new_byte ~ buffer[byte_index*2 + 2:] }}'
+  - target:
+      entity_id: '{{ buffer_entity }}'
+    data:
+      value: '{{ new_buf }}'
+    action: input_text.set_value
+  description: Toggle un bit dans un programme
+  fields:
+    prog:
+      description: Programme (A/B/C/D)
+      example: A
+    index:
+      description: Index du bit (0-167)
+      example: 0
+  alias: toggle_prog_bit
+
+
+envoie_prog:
+  description: Envoie la programmation horaire au T.One
+  fields:
+    prog:
+      description: Nom de la programmation (A,B,C ou D)
+      example: A
+      selector:
+        select:
+          options:
           - A
           - B
           - C
           - D
-    required: true
-  direction:
-    description: Direction de la synchro
-    example: esphome_vers_ha
-    default: esphome_vers_ha
-    required: true
-    selector:
-      select:
-        options:
+      required: true
+    direction:
+      description: Direction de la synchro
+      example: esphome_vers_ha
+      default: esphome_vers_ha
+      required: true
+      selector:
+        select:
+          options:
           - esphome_vers_ha
           - ha_vers_esphome
-sequence:
+  sequence:
   - variables:
-      buffer_entity: "{{ 'input_text.prog' ~ prog | lower ~ '_buffer' }}"
-      dataset_entity: "{{ 'sensor.toug_aquaair_progr_' ~ prog | lower ~ '_dataset' }}"
-      buffer: "{{ states(buffer_entity) }}"
-      dataset: "{{ states(dataset_entity) }}"
+      buffer_entity: '{{ ''input_text.prog'' ~ prog | lower ~ ''_buffer'' }}'
+      dataset_entity: '{{ ''sensor.aldes_rdc_progr_'' ~ prog | lower ~ ''_dataset''
+        }}'
+      buffer: '{{ states(buffer_entity) }}'
+      dataset: '{{ states(dataset_entity) }}'
   - if:
-      - condition: template
-        value_template: "{{ direction == 'ha_vers_esphome' }}"
+    - condition: template
+      value_template: '{{ direction == ''ha_vers_esphome'' }}'
     then:
-      - action: esphome.toug_aquaair_change_prog
-        data:
-          prog: "{{ prog }}"
-          dataset: "{{ states(buffer_entity) }}"
+    - action: esphome.aldes_rdc_change_prog
+      data:
+        prog: '{{ prog }}'
+        dataset: '{{ states(buffer_entity) }}'
     else:
-      - action: input_text.set_value
-        target:
-          entity_id: "{{ buffer_entity }}"
-        data:
-          value: "{{ states(dataset_entity) }}"
-alias: envoie_prog
+    - action: input_text.set_value
+      target:
+        entity_id: '{{ buffer_entity }}'
+      data:
+        value: '{{ states(dataset_entity) }}'
+  alias: envoie_prog
