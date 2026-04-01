@@ -1,0 +1,17 @@
+Quantity,Manufacture Part Number,Manufacturer(optional),Description(optional),LCSC Part Number(optional),Package(optional),Customer Part Number(optional)
+1,CT4-1206B475K250F3-Y,KYET,4700nF ±10% Ceramic Capacitor Through Hole P=5.08mm,C49215584,Through Hole P=5.08mm,_C1
+1,178MU0009,KNSCHA,470nF ±10% 50V Ceramic Capacitor X7R Through Hole P=5.08mm,C5632433,Through Hole P=5.08mm,_C2
+1,GR106M050D11RR0VK2FP0,Chengx,10uF 50V Aluminum Electrolytic Capacitors Through Hole D5xL11mm,C78759,Through Hole D5xL11mm,_C8
+1,PE104J2A0501,KYET,100nF ±5% 100V Film Capacitor Metallized Polyester Through Hole P=5mm,C390170,Through Hole P=5mm,_C9
+1,DL25018-4AWD-S,DLL,Connector Header 4 position 2.5mm Pitch 3A Right Angle -40?~+105?,C22382738,Through Hole Right Angle-P=2.5mm,_H5
+2,2.54-4P WZDK,SHOU HAN,Connector Header 4 position 2.5mm Pitch 3A Right Angle -25?~+85?,C18185674,Through Hole Right Angle-P=2.5mm,_H6- _H8
+2,2.54-1*4P,BOOMELE(Boom Precision Elec),Female Header 4 Position 2.54mm Pitch Single Row Through Hole -40?~+105?,C2718488,Through Hole-P=2.54mm,_H13-_H14
+2,FH-00780,Liansheng,Female Header 13 Position 2.54mm Pitch Single Row Through Hole -40?~+105?,C2685211,Through Hole P=2.54mm,_P1-_P2
+2,SK-12D02-VG7,DEALON,Slide Switch SPDT Through Hole Rectangular Columnar 8.6mm,C2998811,Through Hole 8.6x4.6mm,_SW1- _SW2
+1,KH-SS42D02-G3,kinghelm,Through Hole 4PDT Black Through Hole Slide Switches RoHS,C5274503,Through Hole,_SW4
+1,SS-24H03-G070,G-Switch,Slide Switch DP4T 500mA @ 250V Through Hole Rectangular Columnar 29.8mm,C2876019,Through Hole 29.8x9.2mm,_SW6
+4,DW254R-11-02-85,DEALON,Female Header 2 Position 2.54mm Pitch Single Row Through Hole,C2935896,Through Hole P=2.54mm,_U1-_U8-_U9-_U10
+2,DS1023-1x6SF11,CONNFLY Elec,Female Header 2.54mm Pitch Single Row Through Hole,C7509518,Through Hole P=2.54mm,_U11-_U12
+1,DW254W-11-06-85,DEALON,Right Angle 6P 3A 8.5mm 1x6P Side 2.54mm 1 Square Hole Through Hole Right Angle P=2.54mm Headers-  Receptacles-  Female Sockets RoHS,C2935996,Through Hole-Right Angle-P=2.54mm,_U13
+2,DS1023-1x5SF11,CONNFLY Elec,Female Header 2.54mm Pitch Single Row Through Hole,C7509517,Through Hole P=2.54mm,_U15-_U16
+1,MICROCHIP MCP2221-I/SL,MICROCHIP,USB 2.0 SOIC-14 Interface Controllers RoHS,C184842,SOIC-14,U4
