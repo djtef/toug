@@ -591,7 +591,7 @@ input_select:
 ```
 
 6. Ajouter un deuxième script [toggle_prog_bit](ha/scripts.yaml) qui met à jour le buffer quand on change la programmation sur un horaire
-
+```yaml
 toggle_prog_bit:
   sequence:
   - variables:
@@ -620,6 +620,7 @@ toggle_prog_bit:
       description: Index du bit (0-167)
       example: 0
   alias: toggle_prog_bit
+```
 
 7. Ajouter une vue au dashboard en copiant le contenu de [dashboard_prog.yaml](ha/dashboard_prog.yaml) dans l'éditeur de configuration du dashboard de Home Assistant:
 <img width="265" height="238" alt="image" src="https://github.com/user-attachments/assets/fd5d49ec-d8bd-496c-b97f-57ceab0bc328" />
