@@ -590,7 +590,38 @@ input_select:
   mode: single
 ```
 
-6. Ajouter une vue au dashboard en copiant le contenu de [dashboard_prog.yaml](ha/dashboard_prog.yaml) dans l'éditeur de configuration du dashboard de Home Assistant:
+6. Ajouter un deuxième script [toggle_prog_bit](ha/scripts.yaml) qui met à jour le buffer quand on change la programmation sur un horaire
+
+toggle_prog_bit:
+  sequence:
+  - variables:
+      buffer_entity: '{{ ''input_text.prog'' + prog + ''_buffer'' }}'
+      buffer: '{{ states(buffer_entity) }}'
+      byte_index: '{{ 4 * (index // 24)  + 3 - (index % 24 // 8)| int }}'
+      bit_index: '{{ (index % 8) | int }}'
+      old_byte_str: '{{ buffer[byte_index*2 : byte_index*2 + 2] | string }}'
+      old_byte_val: '{{ int(old_byte_str | string, 0, 16) }}'
+      bit_val: '{{ (old_byte_val // (2 ** bit_index)) % 2 }}'
+      new_byte_val: "{% if bit_val == 1 %}\n  {{ (old_byte_val - (2 ** bit_index))
+        }}\n{% else %}\n  {{ (old_byte_val + (2 ** bit_index)) }}\n{% endif %}"
+      new_byte: '{{ ''{:02X}''.format(new_byte_val|int) | lower }}'
+      new_buf: '{{ buffer[:byte_index*2] ~ new_byte ~ buffer[byte_index*2 + 2:] }}'
+  - target:
+      entity_id: '{{ buffer_entity }}'
+    data:
+      value: '{{ new_buf }}'
+    action: input_text.set_value
+  description: Toggle un bit dans un programme
+  fields:
+    prog:
+      description: Programme (A/B/C/D)
+      example: A
+    index:
+      description: Index du bit (0-167)
+      example: 0
+  alias: toggle_prog_bit
+
+7. Ajouter une vue au dashboard en copiant le contenu de [dashboard_prog.yaml](ha/dashboard_prog.yaml) dans l'éditeur de configuration du dashboard de Home Assistant:
 <img width="265" height="238" alt="image" src="https://github.com/user-attachments/assets/fd5d49ec-d8bd-496c-b97f-57ceab0bc328" />
 
 On obtient ainsi un équivalent de la programmation horaire de la télécommande directement dans Home Assistant qu'on peut synchroniser avec ESPHome et donc le T.One
