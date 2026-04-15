@@ -53,7 +53,7 @@ sensor:
     id: adc_haut
     multiplexer: 'A0_GND'
     gain: 4.096
-    update_interval: 10s
+    update_interval: 1s
     filters:
         - sliding_window_moving_average:
             window_size: 15
@@ -62,7 +62,7 @@ sensor:
     id: adc_bas
     multiplexer: 'A1_GND'
     gain: 4.096
-    update_interval: 10s
+    update_interval: 1s
     filters:
         - sliding_window_moving_average:
             window_size: 15
