@@ -47,7 +47,7 @@ binary_sensor:
     id: commande_k3
     device_class: opening
     pin:
-      number: GPIO36
+      number: GPIO${version == "V1.0" and "36" or "32"}
       mode: INPUT
     filters:
       - delayed_on: 100ms
@@ -77,7 +77,7 @@ binary_sensor:
     id: commande_k6
     device_class: opening
     pin:
-      number: GPIO32
+      number: GPIO${version == "V1.0" and "32" or "36"}
       mode: INPUT
     filters:
       - delayed_on: 100ms
