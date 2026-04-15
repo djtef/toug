@@ -21,8 +21,12 @@ substitutions:
   # K6: Pièce 6
   # K7: Pièce 7
   # K8: Pièce 8
+  # K9: Pièce 9
   
-  # 5/ Voir ci-dessous
+  #5/ Indiquer la version de la TOUG (voir PCB)
+  version: #V1.0 (2025) ou V2.0 (2026)
+  
+  # 6/ Voir ci-dessous
   
 
 ## Customization area
