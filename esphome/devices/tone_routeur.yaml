@@ -16,13 +16,8 @@ esphome:
               else:
                 - switch.turn_on: force_60
      
-pcf8574:
-  - id: 'pcf8574_hub'
-    address: 0x20
-    pcf8575: true
 
 sensor:
-
   - id: !extend temperature_bas
     on_value_range:
       - below: 59.0
@@ -53,7 +48,19 @@ sensor:
       - above: 60.5
         then:
           - switch.turn_on: force_60
- 
+
+binary_sensor: 
+  - platform: gpio
+    name: "Résistance appoint"
+    id: resistance_appoint
+    device_class: heat
+    pin:
+      number: GPIO${version == "V1.0" and "32" or "36"}
+      mode: INPUT
+      inverted: False
+    filters:
+      - delayed_on: 1s
+      - delayed_off: 1s
     
 switch:
   - platform: gpio
@@ -61,9 +68,6 @@ switch:
     #Relais
     name: "Forçage 60°"
     pin:
-      pcf8574: pcf8574_hub
-      number: 12
-      mode:
-        output: true
-      inverted: true
+      number: GPIO33
+      mode: OUTPUT
  
