@@ -5,7 +5,7 @@ substitutions:
   
 packages:
   <<: !include_dir_named common
-  board: !include boards/wt32-eth01_ethernet.yaml
+  board: !include boards/wt32-eth01_wifi.yaml
   device: !include devices/tone_aquaair.yaml
   option: !include devices/tone_routeur.yaml
   
