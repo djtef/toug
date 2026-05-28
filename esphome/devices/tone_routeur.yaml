@@ -61,6 +61,9 @@ binary_sensor:
     filters:
       - delayed_on: 1s
       - delayed_off: 1s
+  
+  - id: !remove commande_k5
+  - id: !remove commande_k6
     
 switch:
   - platform: gpio
@@ -71,3 +74,4 @@ switch:
       number: GPIO33
       mode: OUTPUT
  
+
