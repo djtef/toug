@@ -1,23 +1,23 @@
 input_text:
-  progA_buffer:
+  proga_buffer:
     name: progA_buffer
     min: 56
     max: 56
     pattern: "[0-9A-Fa-f]+"
     mode: text
-  progB_buffer:
+  progb_buffer:
     name: progB_buffer
     min: 56
     max: 56
     pattern: "[0-9A-Fa-f]+"
     mode: text
-  progC_buffer:
+  progc_buffer:
     name: progC_buffer
     min: 56
     max: 56
     pattern: "[0-9A-Fa-f]+"
     mode: text
-  progD_buffer:
+  progd_buffer:
     name: progD_buffer
     min: 56
     max: 56
@@ -31,7 +31,7 @@ input_select:
       - Chauffage Progr. A
       - Chauffage Progr. B
       - Rafraîchissement Progr. C
-      - Rafraîchissement Progr. C
+      - Rafraîchissement Progr. D
     initial: Chauffage Progr. A
     icon: mdi:calendar-blank-multiple
    
