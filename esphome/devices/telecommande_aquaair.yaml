@@ -31,7 +31,7 @@ sensor:
     register_type: holding
     address: 106
     value_type: S_WORD
-    unit_of_measurement: "Bar"
+    unit_of_measurement: "bar"
     accuracy_decimals: 2
     icon: "mdi:gauge" # Icône pour la pression
     filters:
@@ -85,7 +85,7 @@ sensor:
     register_count: 2
     value_type: U_DWORD
     device_class: monetary
-    state_class: total_increasing  # Si c'est un compteur cumulatif
+    state_class: total
     unit_of_measurement: "€"
     accuracy_decimals: 2
     filters:
