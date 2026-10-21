@@ -212,12 +212,15 @@ Une fois tout branché :
 
 ## Installer ESPHome
 
+Compatible avec **ESPHome 2026.9+**.
+
 La méthode la plus simple c'est de passer par Home Assistant avec l'addon [ESPhome Device Builder](https://esphome.io/guides/getting_started_hassio/) :
 * Cliquer sur NEW DEVICE, puis Continue et New Device Setup
 * Entrer un nom, par exemple TOUG AIR
 * Choisir ESP32 et faire SKIP
 * Cliquer sur EDIT sur le composant créé
-* Effacer le contenu et le remplacer par le contenu du fichier [template.yaml](esphome/template.yaml) 
+* Effacer le contenu et le remplacer par le contenu du fichier [template.yaml](esphome/template.yaml)
+* Compléter `secrets.yaml` avec les clés de [secrets.yaml.example](esphome/secrets.yaml.example) (`esphome_api_key`, OTA, web, Wi‑Fi si besoin)
 * Suivre les 5 étapes :
 1. `TOne:` `air` pour un T.ONE AIR ou `aquaair` pour un T.ONE AquaAIR
 2. `nombre_thermostats:` Définir le nombre de thermostats associés au T.One (entre 1 et 9)

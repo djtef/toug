@@ -82,7 +82,6 @@ sensor:
     name: "Coût eau chaude"
     register_type: holding
     address: 21682
-    register_count: 2
     value_type: U_DWORD
     device_class: monetary
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -95,7 +94,6 @@ sensor:
     name: "Conso eau chaude"
     register_type: holding
     address: 21672
-    register_count: 2
     value_type: U_DWORD
     device_class: energy
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -106,7 +104,6 @@ sensor:
     name: "Conso eau chaude appoint"
     register_type: holding
     address: 21674
-    register_count: 2
     value_type: U_DWORD
     device_class: energy
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -255,9 +252,8 @@ output:
     value_type: U_WORD
     use_write_multiple: true
     write_lambda: |-
-      payload.clear();
-      payload.push_back(0x3);
-      return 0;  // valeur interne, peu importe
+      item->write_single_register(20279, 0x0003);
+      return {};
       
 button:
   - platform: template
@@ -265,5 +261,6 @@ button:
     icon: "mdi:history"
     entity_category: config
     on_press:
-      - output.turn_on:
+      - output.set_level:
           id: reset_anode
+          level: 1.0

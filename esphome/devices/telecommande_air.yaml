@@ -113,7 +113,7 @@ script:
                 condition:
                   lambda: |-
                     int nb_c = (int) id(nb_canaux).state;
-                    int target_value = pow(2, nb_c + 1) - 1;
+                    int target_value = std::pow(2, nb_c + 1) - 1;
                     return (int) id(canaux_actifs).state > 0 &&
                            (int) id(registre_30).state >= target_value &&
                            (int) id(registre_35).state >= target_value;
@@ -373,7 +373,6 @@ text_sensor:
     icon: "mdi:clipboard-alert-outline"
     register_type: holding
     address: 20162
-    register_count: 4
     response_size: 8
     raw_encode: NONE
     lambda: |-
@@ -441,7 +440,6 @@ text_sensor:
     entity_category: diagnostic
     register_type: holding
     address: 0x000E
-    register_count: 2
     response_size: 4
     raw_encode: HEXBYTES
    
@@ -464,7 +462,7 @@ text_sensor:
     raw_encode: HEXBYTES
     # Lambda pour décoder la valeur numérique en description textuelle
     lambda: |-
-      uint16_t value = modbus_controller::word_from_hex_str(x, 0);
+      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
       switch (value) {
         case 0: return std::string("Initialisation");
         case 1: return std::string("Échangeur ECS");
@@ -485,7 +483,7 @@ text_sensor:
     
     # Lambda pour décoder la valeur numérique en description textuelle
     lambda: |-
-      uint16_t value = modbus_controller::word_from_hex_str(x, 0);
+      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
       if (value <= 2900) {
         return std::string("Bon");
       } else if (value <= 4394) {
@@ -501,7 +499,6 @@ text_sensor:
     entity_category: diagnostic
     register_type: holding
     address: 31200
-    register_count: 14
     response_size: 28
     raw_encode: HEXBYTES
     
@@ -512,7 +509,6 @@ text_sensor:
     entity_category: diagnostic
     register_type: holding
     address: 31214
-    register_count: 14
     response_size: 28
     raw_encode: HEXBYTES
     
@@ -523,7 +519,6 @@ text_sensor:
     entity_category: diagnostic
     register_type: holding
     address: 31228
-    register_count: 14
     response_size: 28
     raw_encode: HEXBYTES
     
@@ -534,7 +529,6 @@ text_sensor:
     entity_category: diagnostic
     register_type: holding
     address: 31242
-    register_count: 14
     response_size: 28
     raw_encode: HEXBYTES
   - platform: template
@@ -569,7 +563,7 @@ text_sensor:
           if (end_cond) {
             int end = eco && h == 23 ? h + 1 : h;
             if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
+            plages += std::to_string(start) + "h-" + std::to_string(end) + "h";
             start = -1;
           }
         }
@@ -616,7 +610,7 @@ text_sensor:
           if (end_cond) {
             int end = eco && h == 23 ? h + 1 : h;
             if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
+            plages += std::to_string(start) + "h-" + std::to_string(end) + "h";
             start = -1;
           }
         }
@@ -663,7 +657,7 @@ text_sensor:
           if (end_cond) {
             int end = eco && h == 23 ? h + 1 : h;
             if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
+            plages += std::to_string(start) + "h-" + std::to_string(end) + "h";
             start = -1;
           }
         }
@@ -710,7 +704,7 @@ text_sensor:
           if (end_cond) {
             int end = eco && h == 23 ? h + 1 : h;
             if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
+            plages += std::to_string(start) + "h-" + std::to_string(end) + "h";
             start = -1;
           }
         }
@@ -733,7 +727,6 @@ sensor:
     address: 21000
     register_type: holding
     value_type: U_WORD
-    register_count: 1
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Filtre"
@@ -747,7 +740,6 @@ sensor:
     name: "Coût chauffage"
     register_type: holding
     address: 21678
-    register_count: 2
     value_type: U_DWORD
     device_class: monetary
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -760,7 +752,6 @@ sensor:
     name: "Coût rafraichissement"
     register_type: holding
     address: 21680
-    register_count: 2
     value_type: U_DWORD
     device_class: monetary
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -773,7 +764,6 @@ sensor:
     name: "Conso chauffage"
     register_type: holding
     address: 21668
-    register_count: 2
     value_type: U_DWORD
     device_class: energy
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -784,7 +774,6 @@ sensor:
     name: "Conso chauffage appoint"
     register_type: holding
     address: 21670
-    register_count: 2
     value_type: U_DWORD
     device_class: energy
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -795,7 +784,6 @@ sensor:
     name: "Conso rafraichissement"
     register_type: holding
     address: 21676
-    register_count: 2
     value_type: U_DWORD
     device_class: energy
     state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -806,7 +794,6 @@ sensor:
     name: "Temps cumul compresseur ON"
     register_type: holding
     address: 20049
-    register_count: 2
     value_type: U_DWORD
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -818,7 +805,6 @@ sensor:
     name: "Temps compresseur ON"
     register_type: holding
     address: 72
-    register_count: 2
     value_type: U_DWORD
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -830,7 +816,6 @@ sensor:
     name: "Temps compresseur OFF"
     register_type: holding
     address: 150
-    register_count: 2
     value_type: U_DWORD
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -842,7 +827,6 @@ sensor:
     name: "Temps ventilateur ON"
     register_type: holding
     address: 20047
-    register_count: 2
     value_type: U_DWORD
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
@@ -856,10 +840,10 @@ sensor:
     entity_category: diagnostic
     register_type: holding
     address: 16
-    register_count: 2  # Lit deux Words (4 octets)
     device_class: timestamp
     accuracy_decimals: 0
-    value_type: U_WORD # Utilisation de U_WORD pour éviter le mélange en U_DWORD
+    # U_DWORD = 2 registres (date + heure). Le lambda lit les octets bruts.
+    value_type: U_DWORD
     
     lambda: |-
       // data est un tableau d'octets. Reconstruction des Words (16 bits)
@@ -910,10 +894,10 @@ sensor:
     entity_category: diagnostic
     register_type: holding
     address: 31008
-    register_count: 2  # Lit deux Words (4 octets)
     device_class: timestamp
     accuracy_decimals: 0
-    value_type: U_WORD # Utilisation de U_WORD pour éviter le mélange en U_DWORD
+    # U_DWORD = 2 registres (date + heure). Le lambda lit les octets bruts.
+    value_type: U_DWORD
     
     lambda: |-
       // data est un tableau d'octets. Reconstruction des Words (16 bits)
@@ -962,10 +946,10 @@ sensor:
     entity_category: diagnostic
     register_type: holding
     address: 31010
-    register_count: 2  # Lit deux Words (4 octets)
     device_class: timestamp
     accuracy_decimals: 0
-    value_type: U_WORD # Utilisation de U_WORD pour éviter le mélange en U_DWORD
+    # U_DWORD = 2 registres (date + heure). Le lambda lit les octets bruts.
+    value_type: U_DWORD
     
     lambda: |-
       // data est un tableau d'octets. Reconstruction des Words (16 bits)
@@ -1645,7 +1629,6 @@ select:
     address: 21000
     use_write_multiple: true
     value_type: U_WORD
-    register_count: 2
     optimistic: true
 
     optionsmap:
@@ -1661,19 +1644,10 @@ select:
     write_lambda: |-
       // value = numéro du test choisi (optionsmap)
       uint16_t test_id = (uint16_t) value;
-
-      // Registre 21000 = ID du test
-      payload.push_back(test_id);
-
-      // Registre 21001 = 0 si test != 0, sinon 32753 pour arrêter
-      if (test_id == 0) {
-        payload.push_back(32753);
-      } else {
-        payload.push_back(0);
-      }
-
-      // Retourne n'importe quelle valeur (payload est prioritaire)
-      return 0;
+      // 21000 = ID du test, 21001 = 0 pendant le test, 32753 pour l'arrêter
+      uint16_t regs[2] = {test_id, (uint16_t) (test_id == 0 ? 32753 : 0)};
+      item->write_multiple_registers(21000, regs);
+      return {};
       
     on_value:
       then:
@@ -1691,7 +1665,7 @@ select:
               # Si l'option choisie n'est PAS "Aucun", on relance le timer
               - if:
                   condition:
-                    lambda: 'return strcmp(id(test_mode).current_option().c_str(), "Aucun") != 0;'
+                    lambda: 'return strcmp(id(test_mode).current_option(), "Aucun") != 0;'
                   then:
                     - script.execute: auto_stop_test
                     - if:
@@ -1879,9 +1853,10 @@ switch:
 
 # Example configuration entry
 light:
-  - platform: binary
+  - platform: monochromatic
     name: "LED bleue télécommande"
     output: output_led
+    default_transition_length: 0s
       
 output:
   - platform: modbus_controller
@@ -1892,9 +1867,8 @@ output:
     value_type: U_WORD
     use_write_multiple: true
     write_lambda: |-
-      payload.clear();
-      payload.push_back(0x1);
-      return 0;  // valeur interne, peu importe
+      item->write_single_register(31017, 0x0001);
+      return {};
     
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1910,8 +1884,9 @@ button:
     entity_category: config
     icon: "mdi:file-restore-outline"
     on_press:
-      - output.turn_on:
+      - output.set_level:
           id: reset_conso
+          level: 1.0
   - platform: template
     id: desactiver_vacances
     entity_category: config
