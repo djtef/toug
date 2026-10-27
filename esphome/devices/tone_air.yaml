@@ -25,7 +25,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K1a}"
     id: commande_k1a
-    device_class: power
+    device_class: opening
     pin:
       number: GPIO39
       mode: INPUT
@@ -35,7 +35,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K2}"
     id: commande_k2
-    device_class: power
+    device_class: opening
     pin:
       number: GPIO35
       mode: INPUT
