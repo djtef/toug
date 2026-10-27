@@ -1,1 +1,9 @@
 .DS_Store
+.esphome/
+**/.esphome/
+**/secrets.yaml
+*.pyc
+__pycache__/
+.idea/
+.vscode/
+*.log
