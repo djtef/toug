@@ -45,7 +45,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K3}"
     id: commande_k3
-    device_class: opening
+    device_class: power
     pin:
       number: GPIO${version == "V1.0" and "36" or "32"}
       mode: INPUT
@@ -55,7 +55,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K4}"
     id: commande_k4
-    device_class: opening
+    device_class: power
     pin:
       number: GPIO12
       mode: INPUT
@@ -65,7 +65,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K5}"
     id: commande_k5
-    device_class: opening
+    device_class: power
     pin:
       number: GPIO33
       mode: INPUT
@@ -75,7 +75,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K6}"
     id: commande_k6
-    device_class: opening
+    device_class: power
     pin:
       number: GPIO${version == "V1.0" and "32" or "36"}
       mode: INPUT
