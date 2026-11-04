@@ -44,16 +44,8 @@ api:
             regs.push_back(value);
           }
           
-          // --- 4) Création de la commande Modbus ---
-          auto cmd = modbus_controller::ModbusCommandItem::create_write_multiple_command(
-              modbus_telecommande,
-              start_address,
-              regs.size(),
-              regs
-          );
-          
-          // --- 5) Envoi ---
-          modbus_telecommande->queue_command(cmd);
+          // --- 4) Envoi Modbus (fonction 16 / 0x10) ---
+          id(telecommande_client).write_multiple_registers(start_address, regs);
           
           ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)",
                    prog.c_str(), regs.size(), start_address);
@@ -241,13 +233,8 @@ datetime:
             
             std::vector<uint16_t> rtc_data = {date_reg, final_time_reg};
 
-            modbus_controller::ModbusController *controller = id(modbus_telecommande);
-
-            // Créer la commande d'écriture multiple (Fonction 16/0x10)
-            modbus_controller::ModbusCommandItem set_rtc_command =
-                modbus_controller::ModbusCommandItem::create_write_multiple_command(controller, 16, 2, rtc_data);
-
-            controller->queue_command(set_rtc_command);
+            // Écriture des registres 16 et 17 (fonction Modbus 16 / 0x10)
+            id(telecommande_client).write_multiple_registers(16, rtc_data);
             
             ESP_LOGI("Télécommande", "Date/heure modifiée manuellement :  %04d-%02d-%02d %02d:%02d:%02d", 
                       time_info.tm_year + 1900, month, time_info.tm_mday, time_info.tm_hour, time_info.tm_min, time_info.tm_sec);
@@ -263,6 +250,12 @@ uart:
 modbus:
     - id: modbus2
       uart_id: U2
+
+# Client ad hoc utilisé dans les lambdas pour les écritures Modbus multiples
+modbus_client:
+    - id: telecommande_client
+      modbus_id: modbus2
+      address: 0x1
 
 modbus_controller:
     - address: 0x1
@@ -1659,7 +1652,7 @@ select:
               # Si l'option choisie n'est PAS "Aucun", on relance le timer
               - if:
                   condition:
-                    lambda: 'return strcmp(id(test_mode).current_option(), "Aucun") != 0;'
+                    lambda: 'return (id(test_mode).current_option() != "Aucun");'
                   then:
                     - script.execute: auto_stop_test
                     - if:
@@ -1741,11 +1734,8 @@ switch:
 
       - lambda: |-
             std::vector<uint16_t> rtc_data = {0, 0};
-            modbus_controller::ModbusController *controller = id(modbus_telecommande);
-            // Créer la commande d'écriture multiple (Fonction 16/0x10)
-            modbus_controller::ModbusCommandItem set_rtc_command =
-                modbus_controller::ModbusCommandItem::create_write_multiple_command(controller, 31010, 2, rtc_data);
-            controller->queue_command(set_rtc_command);
+            // Effacement du registre de fin de vacances (fonction Modbus 16 / 0x10)
+            id(telecommande_client).write_multiple_registers(31010, rtc_data);
 
     turn_off_action:
       - button.press: desactiver_vacances
@@ -1834,10 +1824,8 @@ switch:
             fin.first, fin.second
           };
 
-          auto *ctl = id(modbus_telecommande);
-          auto cmd = modbus_controller::ModbusCommandItem::create_write_multiple_command(
-            ctl, 31008, regs.size(), regs);
-          ctl->queue_command(cmd);
+          // Écriture des quatre registres de début et fin de vacances
+          id(telecommande_client).write_multiple_registers(31008, regs);
 
           ESP_LOGI("Vacances", "Activation OK");
 
@@ -1887,10 +1875,7 @@ button:
     on_press:
       - lambda: |-
             std::vector<uint16_t> rtc_data = {0, 0, 0, 0};
-            modbus_controller::ModbusController *controller = id(modbus_telecommande);
-            // Créer la commande d'écriture multiple (Fonction 16/0x10)
-            modbus_controller::ModbusCommandItem set_rtc_command =
-                modbus_controller::ModbusCommandItem::create_write_multiple_command(controller, 31008, 4, rtc_data);
-            controller->queue_command(set_rtc_command);
+            // Effacement des quatre registres de vacances (fonction Modbus 16 / 0x10)
+            id(telecommande_client).write_multiple_registers(31008, rtc_data);
             ESP_LOGI("Télécommande", "Désactivation vacances");
           
