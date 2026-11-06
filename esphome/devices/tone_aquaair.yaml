@@ -7,7 +7,13 @@ packages:
 i2c:
     sda: GPIO04
     scl: GPIO02
-    frequency: 100kHz 
+    frequency: 100kHz
+    # Sans timeout, ESPHome utilise 0 et ESP-IDF l'interprete comme une
+    # attente infinie : si l'ADS1115 ne repond pas (absent, soudure seche,
+    # bus bloque), la premiere transaction ne rend jamais la main et le
+    # firmware reste fige dans setup(), sans Wi-Fi ni message d'erreur.
+    # 10 ms suffit tres largement a 100 kHz et degrade proprement.
+    timeout: 10ms
 
 
 ads1115:
