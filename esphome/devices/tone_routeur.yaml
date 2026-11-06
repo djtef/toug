@@ -15,9 +15,77 @@ esphome:
                 - switch.turn_off: force_60
               else:
                 - switch.turn_on: force_60
-     
+
+i2c:
+    sda: GPIO04
+    scl: GPIO02
+    frequency: 100kHz 
+
+ads1115:
+  - address: 0x48
+
+binary_sensor: 
+  - platform: gpio
+    name: "Résistance appoint"
+    id: resistance_appoint
+    device_class: heat
+    pin:
+      number: GPIO${version == "V1.0" and "32" or "36"}
+      mode: INPUT
+      inverted: False
+    filters:
+      - delayed_on: 1s
+      - delayed_off: 1s
+  - id: !remove commande_k5
+  - id: !remove commande_k6
 
 sensor:
+  - platform: ntc
+    sensor: resistance_bas
+    calibration:
+        - 1.3kOhm -> 78°C
+        - 4.2kOhm -> 46°C
+        - 11.66kOhm -> 24°C
+    name: Temperature bas
+    id: temperature_bas
+  - platform: resistance
+    id: resistance_bas
+    sensor: adc_bas
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+    name: Resistance bas
+  - platform: ntc
+    sensor: resistance_haut
+    calibration:
+        - 1.3kOhm -> 78°C
+        - 4.8kOhm -> 44°C
+        - 11.42kOhm -> 24°C
+    name: Temperature haut
+    id: temperature_haut
+  - platform: resistance
+    id: resistance_haut
+    sensor: adc_haut
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+    name: Resistance Haut
+  - platform: ads1115
+    id: adc_haut
+    multiplexer: 'A0_GND'
+    gain: 4.096
+    update_interval: 1s
+    filters:
+        - sliding_window_moving_average:
+            window_size: 15
+            send_every: 15
+  - platform: ads1115
+    id: adc_bas
+    multiplexer: 'A1_GND'
+    gain: 4.096
+    update_interval: 1s
+    filters:
+        - sliding_window_moving_average:
+            window_size: 15
+            send_every: 15
   - id: !extend temperature_bas
     on_value_range:
       - below: 59.0
@@ -32,8 +100,6 @@ sensor:
       - above: 60.5
         then:
           - switch.turn_on: force_60
- 
-    
   - id: !extend temperature_haut
     on_value_range:
       - below: 59.0
@@ -49,22 +115,6 @@ sensor:
         then:
           - switch.turn_on: force_60
 
-binary_sensor: 
-  - platform: gpio
-    name: "Résistance appoint"
-    id: resistance_appoint
-    device_class: heat
-    pin:
-      number: GPIO${version == "V1.0" and "32" or "36"}
-      mode: INPUT
-      inverted: False
-    filters:
-      - delayed_on: 1s
-      - delayed_off: 1s
-  
-  - id: !remove commande_k5
-  - id: !remove commande_k6
-    
 switch:
   - platform: gpio
     id: force_60
@@ -73,5 +123,3 @@ switch:
     pin:
       number: GPIO33
       mode: OUTPUT
- 
-

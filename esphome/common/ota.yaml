@@ -13,4 +13,3 @@ ota:
     id: ota_esphome
     password: "${ota_password}"
   - platform: web_server  # Add this for web-based OTA uploads
- 

@@ -4,7 +4,31 @@ esphome:
       - select.set:
           id: test_mode
           option: "Aucun"
-                
+
+uart:
+    - id: U2
+      tx_pin: GPIO14
+      rx_pin: GPIO15
+      baud_rate: 19200
+      parity: EVEN
+      stop_bits: 1
+
+modbus:
+    - id: modbus2
+      uart_id: U2
+
+modbus_controller:
+    - address: 0x1
+      id: modbus_telecommande
+      update_interval: 10s
+      modbus_id: modbus2
+
+# Client ad hoc utilisé dans les lambdas pour les écritures Modbus multiples
+modbus_client:
+    - id: telecommande_client
+      modbus_id: modbus2
+      address: 0x1
+
 api:
   actions:
     - action: change_prog
@@ -50,7 +74,6 @@ api:
           ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)",
                    prog.c_str(), regs.size(), start_address);
 
-
 script:
   - id: update_mode_air_telecommande
     then:
@@ -73,8 +96,6 @@ script:
           }
           id(mode_air_telecommande).publish_state(mode_str);
           ESP_LOGD("Mode Air télécommande", "Publish state %s", mode_str.c_str());
-
-
   - id: auto_stop_test
     mode: restart
     then:
@@ -107,8 +128,8 @@ script:
                     int nb_c = (int) id(nb_canaux).state;
                     int target_value = std::pow(2, nb_c + 1) - 1;
                     return (int) id(canaux_actifs).state > 0 &&
-                           (int) id(registre_30).state >= target_value &&
-                           (int) id(registre_35).state >= target_value;
+                           (int) id(etat_30).state >= target_value &&
+                           (int) id(etat_35).state >= target_value;
                 timeout: 300s
             - if:
                 condition:
@@ -138,9 +159,6 @@ script:
                 format: "TEST : Timeout test sélectionné -> Annulation"
                 level: ERROR
 
-
-
-
 globals:
   - id: last_test_index
     type: int
@@ -150,7 +168,7 @@ globals:
 time:
   - platform: homeassistant
     id: homeassistant_time
-    
+
 datetime:
   - platform: template
     name: "Vacances début"
@@ -161,7 +179,6 @@ datetime:
     entity_category: config
     update_interval: 10s
     optimistic: true
-
   - platform: template
     name: "Vacances fin"
     id: vacances_fin
@@ -171,7 +188,6 @@ datetime:
     entity_category: config
     update_interval: 10s
     optimistic: true
-   
   - platform: template
     name: "Réglage Date/Heure"
     id: user_set_time
@@ -199,9 +215,7 @@ datetime:
       time.hour  = timeinfo->tm_hour;
       time.minute = timeinfo->tm_min;
       time.second = timeinfo->tm_sec;
-
       return time;
-
     set_action:
       then:
         - lambda: |-
@@ -239,36 +253,15 @@ datetime:
             ESP_LOGI("Télécommande", "Date/heure modifiée manuellement :  %04d-%02d-%02d %02d:%02d:%02d", 
                       time_info.tm_year + 1900, month, time_info.tm_mday, time_info.tm_hour, time_info.tm_min, time_info.tm_sec);
 
-uart:
-    - id: U2
-      tx_pin: GPIO14
-      rx_pin: GPIO15
-      baud_rate: 19200
-      parity: EVEN
-      stop_bits: 1
-
-modbus:
-    - id: modbus2
-      uart_id: U2
-
-# Client ad hoc utilisé dans les lambdas pour les écritures Modbus multiples
-modbus_client:
-    - id: telecommande_client
-      modbus_id: modbus2
-      address: 0x1
-
-modbus_controller:
-    - address: 0x1
-      id: modbus_telecommande
-      update_interval: 10s
-      modbus_id: modbus2
 binary_sensor:
+  # Registre 131
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Etat dégivrage"
     icon: "mdi:snowflake-melt"
     register_type: holding 
     address: 131
+  # Registre 5029
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: Canal ${K1a}
@@ -324,7 +317,7 @@ binary_sensor:
     register_type: holding
     device_class: opening
     address: 5029
-    bitmask: 0x40  
+    bitmask: 0x40
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: Canal ${K7}
@@ -332,7 +325,7 @@ binary_sensor:
     register_type: holding
     device_class: opening
     address: 5029
-    bitmask: 0x80 
+    bitmask: 0x80
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: Canal ${K8}
@@ -340,15 +333,15 @@ binary_sensor:
     register_type: holding
     device_class: opening
     address: 5029
-    bitmask: 0x100 
+    bitmask: 0x100
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat"
-    id: etat
-    entity_category: diagnostic
+    name: Canal ${K9}
+    id: canal_k9
     register_type: holding
-    address: 6
-    icon: "mdi:cog-play-outline"
+    device_class: opening
+    address: 5029
+    bitmask: 0x200
 # Supprime les canaux non utilisées (Solution pour le 'null')
   - id: !remove ${nombre_thermostats | int < 2 and "canal_k2"}
   - id: !remove ${nombre_thermostats | int < 3 and "canal_k3"}
@@ -357,8 +350,90 @@ binary_sensor:
   - id: !remove ${nombre_thermostats | int < 6 and "canal_k6"}
   - id: !remove ${nombre_thermostats | int < 7 and "canal_k7"}
   - id: !remove ${nombre_thermostats | int < 8 and "canal_k8"}
+  - id: !remove ${nombre_thermostats | int < 9 and "canal_k9"}
   
-text_sensor:   
+text_sensor:
+  # Registre 1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Version registre top"
+    entity_category: diagnostic
+    icon: "mdi:package-up"
+    register_type: holding
+    address: 1
+    raw_encode: HEXBYTES
+  # Registre 14
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Identifiant IHM"
+    id: identifiant_ihm
+    icon: mdi:identifier
+    entity_category: diagnostic
+    register_type: holding
+    address: 14
+    response_size: 4
+    raw_encode: HEXBYTES
+  # Registre 51
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Protection compresseur"
+    entity_category: diagnostic
+    register_type: holding
+    address: 51
+    raw_encode: HEXBYTES
+    icon: "mdi:security" # Icône appropriée pour la protection ou l'état
+  # Registre 90
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Défaut unité extérieure"
+    entity_category: diagnostic
+    register_type: holding
+    address: 90
+    raw_encode: HEXBYTES
+    icon: "mdi:alert-octagon" # Icône pour signaler un défaut ou une alerte
+  # Registre 6021
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "État du circuit frigo"
+    id: etat_circuit_frigo
+    icon: "mdi:pipe-valve" # Icône pour un circuit/vanne
+    register_type: holding
+    address: 6021
+    raw_encode: HEXBYTES
+    # Lambda pour décoder la valeur numérique en description textuelle
+    lambda: |-
+      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
+      switch (value) {
+        case 0: return std::string("Initialisation");
+        case 1: return std::string("Échangeur ECS");
+        case 2: return std::string("Coil AIR");
+        case 3: return std::string("Position Standby");
+        case 4: return std::string("Position Sécurité");
+        case 5: return std::string("Wait");
+        default: return std::string("Inconnu");
+      }
+  # Registre 20063
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "État Filtre"
+    icon: "mdi:air-filter"
+    entity_category: diagnostic
+    register_type: holding
+    address: 20063
+    raw_encode: HEXBYTES
+    
+    # Lambda pour décoder la valeur numérique en description textuelle
+    lambda: |-
+      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
+      if (value <= 2900) {
+        return std::string("Bon");
+      } else if (value <= 4394) {
+        return std::string("Moyen");
+      } else if (value > 4394) {
+        return std::string("Mauvais");
+      }
+      return std::string("Inconnu");
+  # Registre 20162
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: defauts
@@ -407,119 +482,45 @@ text_sensor:
 
       if (out.empty()) return std::string("Aucun");
       return out;
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Défaut unité extérieure"
-    entity_category: diagnostic
-    register_type: holding
-    address: 90
-    raw_encode: HEXBYTES
-    icon: "mdi:alert-octagon" # Icône pour signaler un défaut ou une alerte
-      
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Version registre top"
-    entity_category: diagnostic
-    icon: "mdi:package-up"
-    register_type: holding
-    address: 1
-    raw_encode: HEXBYTES
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Identifiant IHM"
-    id: identifiant_ihm
-    icon: mdi:identifier
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x000E
-    response_size: 4
-    raw_encode: HEXBYTES
-   
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Protection compresseur"
-    entity_category: diagnostic
-    register_type: holding
-    address: 51
-    raw_encode: HEXBYTES
-    icon: "mdi:security" # Icône appropriée pour la protection ou l'état
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "État du circuit frigo"
-    id: etat_circuit_frigo
-    icon: "mdi:pipe-valve" # Icône pour un circuit/vanne
-    register_type: holding
-    address: 6021
-    raw_encode: HEXBYTES
-    # Lambda pour décoder la valeur numérique en description textuelle
-    lambda: |-
-      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
-      switch (value) {
-        case 0: return std::string("Initialisation");
-        case 1: return std::string("Échangeur ECS");
-        case 2: return std::string("Coil AIR");
-        case 3: return std::string("Position Standby");
-        case 4: return std::string("Position Sécurité");
-        case 5: return std::string("Wait");
-        default: return std::string("Inconnu");
-      }
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "État Filtre"
-    icon: "mdi:air-filter"
-    entity_category: diagnostic
-    register_type: holding
-    address: 20063
-    raw_encode: HEXBYTES
-    
-    # Lambda pour décoder la valeur numérique en description textuelle
-    lambda: |-
-      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
-      if (value <= 2900) {
-        return std::string("Bon");
-      } else if (value <= 4394) {
-        return std::string("Moyen");
-      } else if (value > 4394) {
-        return std::string("Mauvais");
-      }
-      return std::string("Inconnu");
+  # Registre 31200
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: proga
-    name: "Progr. A dataset"
+    #name: "Progr. A dataset"
+    internal: true
     entity_category: diagnostic
     register_type: holding
     address: 31200
     response_size: 28
     raw_encode: HEXBYTES
-    
+  # Registre 31214
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progb
-    name: "Progr. B dataset"
+    #name: "Progr. B dataset"
+    internal: true
     entity_category: diagnostic
     register_type: holding
     address: 31214
     response_size: 28
     raw_encode: HEXBYTES
-    
+  # Registre 31228
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progc
-    name: "Progr. C dataset"
+    #name: "Progr. C dataset"
+    internal: true
     entity_category: diagnostic
     register_type: holding
     address: 31228
     response_size: 28
     raw_encode: HEXBYTES
-    
+  # Registre 31242
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progd
-    name: "Progr. D dataset"
+    #name: "Progr. D dataset"
+    internal: true
     entity_category: diagnostic
     register_type: holding
     address: 31242
@@ -569,9 +570,7 @@ text_sensor:
         out += plages;
         if (j < 6) out += "\n";
       }
-
       return out;
-
   - platform: template
     name: "Progr. B"
     id: progb_text
@@ -616,9 +615,7 @@ text_sensor:
         out += plages;
         if (j < 6) out += "\n";
       }
-
       return out;
-
   - platform: template
     name: "Progr. C"
     id: progc_text
@@ -663,9 +660,7 @@ text_sensor:
         out += plages;
         if (j < 6) out += "\n";
       }
-
       return out;
-
   - platform: template
     name: "Progr. D"
     id: progd_text
@@ -710,115 +705,36 @@ text_sensor:
         out += plages;
         if (j < 6) out += "\n";
       }
-
       return out;
-   
+
 sensor:
+  # Registre 7
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    # name: "Test actif (ID)"
-    id: test_id
-    address: 21000
+    id: consigne_ventilateur_ui_lue
+    name: "Consigne ventilateur UI"
     register_type: holding
-    value_type: U_WORD
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Coût chauffage"
-    register_type: holding
-    address: 21678
-    value_type: U_DWORD
-    device_class: monetary
-    state_class: total
-    unit_of_measurement: "€"
-    accuracy_decimals: 2
+    address: 7
+    value_type: S_WORD
+    unit_of_measurement: "rpm"
+    accuracy_decimals: 1
+    icon: "mdi:fan-speed-1" # Icône pour la consigne de vitesse du ventilateur
     filters:
-      - multiply: 0.001
+      - multiply: 0.1
+  # Registre 8
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Coût rafraichissement"
+    id: consigne_compresseur_lue
+    name: "Consigne compresseur"
     register_type: holding
-    address: 21680
-    value_type: U_DWORD
-    device_class: monetary
-    state_class: total
-    unit_of_measurement: "€"
-    accuracy_decimals: 2
+    address: 8
+    value_type: S_WORD
+    unit_of_measurement: "Hz"
+    accuracy_decimals: 1
+    icon: "mdi:sine-wave" # Icône pour la fréquence/vitesse
     filters:
-      - multiply: 0.001
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Conso chauffage"
-    register_type: holding
-    address: 21668
-    value_type: U_DWORD
-    device_class: energy
-    state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "kWh"
-    
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Conso chauffage appoint"
-    register_type: holding
-    address: 21670
-    value_type: U_DWORD
-    device_class: energy
-    state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "kWh"
-      
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Conso rafraichissement"
-    register_type: holding
-    address: 21676
-    value_type: U_DWORD
-    device_class: energy
-    state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "kWh"
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Temps cumul compresseur ON"
-    register_type: holding
-    address: 20049
-    value_type: U_DWORD
-    device_class: duration
-    # state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "s"
-    icon: "mdi:timer-play-outline"
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Temps compresseur ON"
-    register_type: holding
-    address: 72
-    value_type: U_DWORD
-    device_class: duration
-    # state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "s"
-    icon: "mdi:timer-play-outline"
-      
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Temps compresseur OFF"
-    register_type: holding
-    address: 150
-    value_type: U_DWORD
-    device_class: duration
-    # state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "s"
-    icon: "mdi:timer-pause-outline"
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Temps ventilateur ON"
-    register_type: holding
-    address: 20047
-    value_type: U_DWORD
-    device_class: duration
-    # state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "s"
-    icon: "mdi:timer-play-outline"
-
+      - multiply: 0.1
+  # Registre 16
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Horloge télécommande"
@@ -870,143 +786,7 @@ sensor:
 
       time_t epoch = mktime(&t);
       return (float)epoch;
-
-
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Début vacances"
-    id: timestamp_debut_vacances
-    entity_category: diagnostic
-    register_type: holding
-    address: 31008
-    device_class: timestamp
-    accuracy_decimals: 0
-    # U_DWORD = 2 registres (date + heure). Le lambda lit les octets bruts.
-    value_type: U_DWORD
-    
-    lambda: |-
-      // data est un tableau d'octets. Reconstruction des Words (16 bits)
-      // data[item->offset + 0] : Octet Haut R16
-      // data[item->offset + 1] : Octet Bas R16
-      // data[item->offset + 2] : Octet Haut R17
-      // data[item->offset + 3] : Octet Bas R17
-      
-      // Reconstruction du Registre 16 (Date)
-      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
-      
-      // Reconstruction du Registre 17 (Heure)
-      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
-
-      // --- Logique de Décodage ---
-      // Date
-      uint8_t day      = date_reg & 0x1F;
-      uint8_t month    = (date_reg >> 5) & 0x0F;
-      uint16_t year    = 1980 + ((date_reg >> 9) & 0x7F);
-      
-      // Heure (Unités de temps)
-      uint8_t hours    = (time_reg >> 11) & 0x1F; 
-      uint16_t time_units = time_reg & 0x7FF;
-      
-      float seconds_total = time_units * 1.875f;
-      uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
-      uint8_t secs    = (uint8_t)((int)seconds_total % 60);
-
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Fin vacances"
-    id: timestamp_fin_vacances
-    entity_category: diagnostic
-    register_type: holding
-    address: 31010
-    device_class: timestamp
-    accuracy_decimals: 0
-    # U_DWORD = 2 registres (date + heure). Le lambda lit les octets bruts.
-    value_type: U_DWORD
-    
-    lambda: |-
-      // data est un tableau d'octets. Reconstruction des Words (16 bits)
-      // data[item->offset + 0] : Octet Haut R16
-      // data[item->offset + 1] : Octet Bas R16
-      // data[item->offset + 2] : Octet Haut R17
-      // data[item->offset + 3] : Octet Bas R17
-      
-      // Reconstruction du Registre 16 (Date)
-      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
-      
-      // Reconstruction du Registre 17 (Heure)
-      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
-
-      // --- Logique de Décodage ---
-      // Date
-      uint8_t day      = date_reg & 0x1F;
-      uint8_t month    = (date_reg >> 5) & 0x0F;
-      uint16_t year    = 1980 + ((date_reg >> 9) & 0x7F);
-      
-      // Heure (Unités de temps)
-      uint8_t hours    = (time_reg >> 11) & 0x1F; 
-      uint16_t time_units = time_reg & 0x7FF;
-      
-      float seconds_total = time_units * 1.875f;
-      uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
-      uint8_t secs    = (uint8_t)((int)seconds_total % 60);
-
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
-
-
-
-
-  # --- Registres du ventilateur et du compresseur (0-10) ---
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: consigne_ventilateur_ui_lue
-    name: "Consigne ventilateur UI"
-    register_type: holding
-    address: 7
-    value_type: S_WORD
-    unit_of_measurement: "rpm"
-    accuracy_decimals: 1
-    icon: "mdi:fan-speed-1" # Icône pour la consigne de vitesse du ventilateur
-    filters:
-      - multiply: 0.1
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: consigne_compresseur_lue
-    name: "Consigne compresseur"
-    register_type: holding
-    address: 8
-    value_type: S_WORD
-    unit_of_measurement: "Hz"
-    accuracy_decimals: 1
-    icon: "mdi:sine-wave" # Icône pour la fréquence/vitesse
-    filters:
-      - multiply: 0.1
-
-  # --- Registres de température et de courant (30-50) ---
+  # Registre 39
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température extérieure/ Extérieur ThoA"
@@ -1020,7 +800,7 @@ sensor:
     icon: "mdi:thermometer-minus" # Icône pour l'extérieur
     filters:
       - multiply: 0.01
-
+  # Registre 42
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Echangeur extérieur ThoR1"
@@ -1034,7 +814,7 @@ sensor:
     icon: "mdi:thermometer" # Température échangeur air" # Icône pour un échangeur/fluide
     filters:
       - multiply: 0.01
-
+  # Registre 44
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Sortie compresseur"
@@ -1048,7 +828,7 @@ sensor:
     icon: "mdi:fire" # Icône pour une température de sortie/chaude
     filters:
       - multiply: 0.01
-
+  # Registre 49
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Courant compresseur"
@@ -1062,8 +842,7 @@ sensor:
     icon: "mdi:current-ac" # Icône pour le courant électrique
     filters:
       - multiply: 0.01
-
-  # --- Registres de vitesse, débit et fréquence (60-70) ---
+  # Registre 61
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Vitesse ventilateur UI"
@@ -1076,18 +855,18 @@ sensor:
     icon: "mdi:fan-speed-3" # Vitesse réelle du ventilateur
     filters:
       - multiply: 0.1
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Débit air cible"
-    state_class: measurement
-    register_type: holding
-    address: 64
-    value_type: U_WORD # Débit généralement positif
-    unit_of_measurement: "m³/h"
-    accuracy_decimals: 0
-    icon: "mdi:turbine" # Icône pour le débit d'air
-
+  # Registre 64
+ # - platform: modbus_controller
+ #   modbus_controller_id: modbus_telecommande
+ #   name: "Débit air cible"
+ #   state_class: measurement
+ #   register_type: holding
+ #   address: 64
+ #   value_type: U_WORD # Débit généralement positif
+ #   unit_of_measurement: "m³/h"
+ #   accuracy_decimals: 0
+ #   icon: "mdi:turbine" # Icône pour le débit d'air
+  # Registre 66
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Fréquence compresseur"
@@ -1100,8 +879,18 @@ sensor:
     icon: "mdi:sine-wave" # Icône pour la fréquence de rotation
     filters:
       - multiply: 0.1
-
-  # --- Registres divers (90-120) ---
+  # Registre 72
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Temps compresseur ON"
+    register_type: holding
+    address: 72
+    value_type: U_DWORD
+    device_class: duration
+    # state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "s"
+    icon: "mdi:timer-play-outline"
+  # Registre 91
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Position détendeur EEV1"
@@ -1112,7 +901,7 @@ sensor:
     unit_of_measurement: "Pls" # Pulses
     accuracy_decimals: 0
     icon: "mdi:valve-open" # Icône pour une vanne/détendeur
-
+  # Registre 93
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Niveau ventilateur extérieur"
@@ -1123,7 +912,7 @@ sensor:
     # unit_of_measurement: "?"
     accuracy_decimals: 0
     icon: "mdi:fan-auto"
-
+  # Registre 94
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Angle vanne 3 voies 1/2''"
@@ -1134,7 +923,7 @@ sensor:
     unit_of_measurement: "°"
     accuracy_decimals: 0
     icon: "mdi:valve" # Icône pour une vanne
-
+  # Registre 95
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Angle vanne 3 voies 1/4''"
@@ -1145,7 +934,7 @@ sensor:
     unit_of_measurement: "°"
     accuracy_decimals: 0
     icon: "mdi:valve"
-
+  # Registre 115
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Ligne gaz Th3"
@@ -1159,7 +948,7 @@ sensor:
     icon: "mdi:thermometer" # Température de la ligne gaz
     filters:
       - multiply: 0.01
-
+  # Registre 116
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Echangeur air crosse Th5"
@@ -1173,7 +962,7 @@ sensor:
     icon: "mdi:thermometer" # Température échangeur air
     filters:
       - multiply: 0.01
-
+  # Registre 117
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Echangeur air capillaire Th6"
@@ -1187,7 +976,7 @@ sensor:
     icon: "mdi:thermometer" # Température échangeur air"
     filters:
       - multiply: 0.01
-
+  # Registre 142
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: canaux_actifs
@@ -1195,32 +984,18 @@ sensor:
     value_type: U_WORD
     register_type: holding
     address: 142
+  # Registre 150
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: registre_30
-    value_type: U_WORD
+    name: "Temps compresseur OFF"
     register_type: holding
-    address: 30
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: registre_35
-    value_type: U_WORD
-    register_type: holding
-    address: 35
-  # --- Registres de ventilation et pression (150-160) ---
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Vitesse air cible"
-    state_class: measurement
-    register_type: holding
-    address: 152
-    value_type: U_WORD
-    unit_of_measurement: "m/s"
-    accuracy_decimals: 0
-    icon: "mdi:windsock"
-    filters:
-      - multiply: 0.1
-
+    address: 150
+    value_type: U_DWORD
+    device_class: duration
+    # state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "s"
+    icon: "mdi:timer-pause-outline"
+  # Registre 157
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Pression statique cible"
@@ -1232,186 +1007,11 @@ sensor:
     unit_of_measurement: "Pa"
     accuracy_decimals: 0
     icon: "mdi:gauge-low" # Pression
-
-
-  # --- Registres de configuration (30000+) ---
+  # Registre 190
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: nb_canaux
-    name: "Nombre de canaux réglés"
-    register_type: holding
-    address: 30026
-    value_type: U_WORD
-    accuracy_decimals: 0
-    icon: "mdi:numeric"
-    filters:
-      # Soustrait 1 à la valeur lue du registre
-      - lambda: return x - 1;
-
-
-
-    
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: composition_foyer_lue
-    register_type: holding
-    address: 31007
-    value_type: U_WORD # Changé à WORD car la correction est une addition
-    accuracy_decimals: 0
-    icon: "mdi:account-group"
-    filters:
-      # Ajoute 2 à la valeur lue du registre
-      - lambda: return x + 2;
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Tarif Kwh"
-    device_class: monetary
-    register_type: holding
-    address: 31013
-    value_type: U_WORD
-    unit_of_measurement: "€/kWh" # Devise standard
-    accuracy_decimals: 3
-    icon: "mdi:currency-eur"
-    filters:
-      - multiply: 0.001
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Usure Filtre"
-    icon: "mdi:percent" # Icône pour une valeur d'usure
-    state_class: measurement
-    entity_category: diagnostic
-    register_type: holding
-    address: 20063
-    value_type: U_WORD
-    # unit_of_measurement: "Unités" 
-    accuracy_decimals: 0
-    
-  # --- Consignes de zone (31100+) ---
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K1a}"
-    id: consigne_k1a
-    device_class: temperature
-    register_type: holding
-    address: 31100
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K1b}"
-    id: consigne_k1b
-    device_class: temperature
-    register_type: holding
-    address: 31101
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K2}"
-    id: consigne_k2
-    device_class: temperature
-    register_type: holding
-    address: 31102
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K3}"
-    id: consigne_k3
-    device_class: temperature
-    register_type: holding
-    address: 31103
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K4}"
-    id: consigne_k4
-    device_class: temperature
-    register_type: holding
-    address: 31104
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K5}"
-    id: consigne_k5
-    device_class: temperature
-    register_type: holding
-    address: 31105
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K6}"
-    id: consigne_k6
-    device_class: temperature
-    register_type: holding
-    address: 31106
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K7}"
-    id: consigne_k7
-    device_class: temperature
-    register_type: holding
-    address: 31107
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Consigne zone ${K8}"
-    id: consigne_k8
-    device_class: temperature
-    register_type: holding
-    address: 31108
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    icon: "mdi:thermostat"
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Température ${K1a}"      
-    id: temperature_k1a    
+    name: "Température ${K1a}"
+    id: temperature_k1a
     disabled_by_default: false 
     device_class: temperature
     state_class: measurement
@@ -1421,11 +1021,12 @@ sensor:
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     filters:
-      - multiply: 0.01 
+      - multiply: 0.01
+  # Registre 191
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Température ${K1b}"   
-    id: temperature_k1b       
+    name: "Température ${K1b}"
+    id: temperature_k1b
     disabled_by_default: false 
     device_class: temperature
     state_class: measurement
@@ -1435,11 +1036,12 @@ sensor:
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     filters:
-      - multiply: 0.01 
+      - multiply: 0.01
+  # Registre 192
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température ${K2}"
-    id: temperature_k2       
+    id: temperature_k2
     disabled_by_default: false
     device_class: temperature
     state_class: measurement
@@ -1450,6 +1052,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
+  # Registre 193
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température ${K3}"
@@ -1464,11 +1067,12 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
+  # Registre 194
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température ${K4}"
     id: temperature_k4
-    disabled_by_default: false 
+    disabled_by_default: false
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -1478,11 +1082,12 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
+  # Registre 195
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température ${K5}"
     id: temperature_k5
-    disabled_by_default: false 
+    disabled_by_default: false
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -1492,11 +1097,12 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
+  # Registre 196
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température ${K6}"
     id: temperature_k6
-    disabled_by_default: false 
+    disabled_by_default: false
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -1506,11 +1112,12 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
+  # Registre 197
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température ${K7}"
     id: temperature_k7
-    disabled_by_default: false 
+    disabled_by_default: false
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -1520,11 +1127,12 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
+  # Registre 198
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Température ${K8}"
     id: temperature_k8
-    disabled_by_default: false 
+    disabled_by_default: false
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -1534,24 +1142,389 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
+  # Registre 199
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Température ${K9}"
+    id: temperature_k9
+    disabled_by_default: false
+    device_class: temperature
+    state_class: measurement
+    register_type: holding
+    address: 199
+    value_type: S_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+  # Registre 20047
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Temps ventilateur ON"
+    register_type: holding
+    address: 20047
+    value_type: U_DWORD
+    device_class: duration
+    # state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "s"
+    icon: "mdi:timer-play-outline"
+  # Registre 20049
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Temps cumul compresseur ON"
+    register_type: holding
+    address: 20049
+    value_type: U_DWORD
+    device_class: duration
+    # state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "s"
+    icon: "mdi:timer-play-outline"
+  # Registre 21000
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    # name: "Test actif (ID)"
+    id: test_id
+    address: 21000
+    register_type: holding
+    value_type: U_WORD
+  # Registre 21668
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Conso chauffage"
+    register_type: holding
+    address: 21668
+    value_type: U_DWORD
+    device_class: energy
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "kWh"
+  # Registre 21670
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Conso chauffage appoint"
+    register_type: holding
+    address: 21670
+    value_type: U_DWORD
+    device_class: energy
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "kWh"
+  # Registre 21676
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Conso rafraichissement"
+    register_type: holding
+    address: 21676
+    value_type: U_DWORD
+    device_class: energy
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "kWh"
+  # Registre 21678
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Coût chauffage"
+    register_type: holding
+    address: 21678
+    value_type: U_DWORD
+    device_class: monetary
+    state_class: total
+    unit_of_measurement: "€"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+  # Registre 21680
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Coût rafraichissement"
+    register_type: holding
+    address: 21680
+    value_type: U_DWORD
+    device_class: monetary
+    state_class: total
+    unit_of_measurement: "€"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+  # Registre 30026
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: nb_canaux
+    name: "Nombre de canaux réglés"
+    register_type: holding
+    address: 30026
+    value_type: U_WORD
+    accuracy_decimals: 0
+    icon: "mdi:numeric"
+    filters:
+      # Soustrait 1 à la valeur lue du registre
+      - lambda: return x - 1;
+  # Registre 31007
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: composition_foyer_lue
+    register_type: holding
+    address: 31007
+    value_type: U_WORD # Changé à WORD car la correction est une addition
+    accuracy_decimals: 0
+    icon: "mdi:account-group"
+    filters:
+      # Ajoute 2 à la valeur lue du registre
+      - lambda: return x + 2;
+  # Registre 31008
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Début vacances"
+    id: timestamp_debut_vacances
+    entity_category: diagnostic
+    register_type: holding
+    address: 31008
+    device_class: timestamp
+    accuracy_decimals: 0
+    # U_DWORD = 2 registres (date + heure). Le lambda lit les octets bruts.
+    value_type: U_DWORD
+    lambda: |-
+      // data est un tableau d'octets. Reconstruction des Words (16 bits)
+      // data[item->offset + 0] : Octet Haut R16
+      // data[item->offset + 1] : Octet Bas R16
+      // data[item->offset + 2] : Octet Haut R17
+      // data[item->offset + 3] : Octet Bas R17
+      
+      // Reconstruction du Registre 16 (Date)
+      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
+      
+      // Reconstruction du Registre 17 (Heure)
+      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
+
+      // --- Logique de Décodage ---
+      // Date
+      uint8_t day      = date_reg & 0x1F;
+      uint8_t month    = (date_reg >> 5) & 0x0F;
+      uint16_t year    = 1980 + ((date_reg >> 9) & 0x7F);
+      
+      // Heure (Unités de temps)
+      uint8_t hours    = (time_reg >> 11) & 0x1F; 
+      uint16_t time_units = time_reg & 0x7FF;
+      
+      float seconds_total = time_units * 1.875f;
+      uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
+      uint8_t secs    = (uint8_t)((int)seconds_total % 60);
+
+      // --- Conversion en timestamp UNIX ---
+      struct tm t;
+      t.tm_year = year - 1900;
+      t.tm_mon  = month - 1;
+      t.tm_mday = day;
+      t.tm_hour = hours;
+      t.tm_min  = minutes;
+      t.tm_sec  = secs;
+      t.tm_isdst = -1; 
+
+      time_t epoch = mktime(&t);
+      return (float)epoch;
+  # Registre 31010
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Fin vacances"
+    id: timestamp_fin_vacances
+    entity_category: diagnostic
+    register_type: holding
+    address: 31010
+    device_class: timestamp
+    accuracy_decimals: 0
+    # U_DWORD = 2 registres (date + heure). Le lambda lit les octets bruts.
+    value_type: U_DWORD
+    lambda: |-
+      // data est un tableau d'octets. Reconstruction des Words (16 bits)
+      // data[item->offset + 0] : Octet Haut R16
+      // data[item->offset + 1] : Octet Bas R16
+      // data[item->offset + 2] : Octet Haut R17
+      // data[item->offset + 3] : Octet Bas R17
+      
+      // Reconstruction du Registre 16 (Date)
+      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
+      
+      // Reconstruction du Registre 17 (Heure)
+      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
+
+      // --- Logique de Décodage ---
+      // Date
+      uint8_t day      = date_reg & 0x1F;
+      uint8_t month    = (date_reg >> 5) & 0x0F;
+      uint16_t year    = 1980 + ((date_reg >> 9) & 0x7F);
+      
+      // Heure (Unités de temps)
+      uint8_t hours    = (time_reg >> 11) & 0x1F; 
+      uint16_t time_units = time_reg & 0x7FF;
+      
+      float seconds_total = time_units * 1.875f;
+      uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
+      uint8_t secs    = (uint8_t)((int)seconds_total % 60);
+
+      // --- Conversion en timestamp UNIX ---
+      struct tm t;
+      t.tm_year = year - 1900;
+      t.tm_mon  = month - 1;
+      t.tm_mday = day;
+      t.tm_hour = hours;
+      t.tm_min  = minutes;
+      t.tm_sec  = secs;
+      t.tm_isdst = -1; 
+
+      time_t epoch = mktime(&t);
+      return (float)epoch;
+  # Registre 31013
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Tarif Kwh"
+    device_class: monetary
+    register_type: holding
+    address: 31013
+    value_type: U_WORD
+    unit_of_measurement: "€/kWh" # Devise standard
+    accuracy_decimals: 3
+    icon: "mdi:currency-eur"
+    filters:
+      - multiply: 0.001
+
+#  # --- Consignes de zone (31100+) ---
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K1a}"
+#    id: consigne_k1a
+#    device_class: temperature
+#    register_type: holding
+#    address: 31100
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K1b}"
+#    id: consigne_k1b
+#    device_class: temperature
+#    register_type: holding
+#    address: 31101
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K2}"
+#    id: consigne_k2
+#    device_class: temperature
+#    register_type: holding
+#    address: 31102
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K3}"
+#    id: consigne_k3
+#    device_class: temperature
+#    register_type: holding
+#    address: 31103
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K4}"
+#    id: consigne_k4
+#    device_class: temperature
+#    register_type: holding
+#    address: 31104
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K5}"
+#    id: consigne_k5
+#    device_class: temperature
+#    register_type: holding
+#    address: 31105
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K6}"
+#    id: consigne_k6
+#    device_class: temperature
+#    register_type: holding
+#    address: 31106
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K7}"
+#    id: consigne_k7
+#    device_class: temperature
+#    register_type: holding
+#    address: 31107
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
+#  - platform: modbus_controller
+#    modbus_controller_id: modbus_telecommande
+#    name: "Consigne zone ${K8}"
+#    id: consigne_k8
+#    device_class: temperature
+#    register_type: holding
+#    address: 31108
+#    value_type: U_WORD
+#    unit_of_measurement: "°C"
+#    accuracy_decimals: 2
+#    icon: "mdi:thermostat"
+#    filters:
+#      - multiply: 0.01
 # Supprime les consignes non utilisées 
-  - id: !remove ${nombre_thermostats | int < 2 and "consigne_k2"}      
-  - id: !remove ${nombre_thermostats | int < 3 and "consigne_k3"}   
-  - id: !remove ${nombre_thermostats | int < 4 and "consigne_k4"} 
-  - id: !remove ${nombre_thermostats | int < 5 and "consigne_k5"} 
-  - id: !remove ${nombre_thermostats | int < 6 and "consigne_k6"} 
-  - id: !remove ${nombre_thermostats | int < 7 and "consigne_k7"} 
-  - id: !remove ${nombre_thermostats | int < 8 and "consigne_k8"} 
+#  - id: !remove ${nombre_thermostats | int < 2 and "consigne_k2"}
+#  - id: !remove ${nombre_thermostats | int < 3 and "consigne_k3"}
+#  - id: !remove ${nombre_thermostats | int < 4 and "consigne_k4"}
+#  - id: !remove ${nombre_thermostats | int < 5 and "consigne_k5"}
+#  - id: !remove ${nombre_thermostats | int < 6 and "consigne_k6"}
+#  - id: !remove ${nombre_thermostats | int < 7 and "consigne_k7"}
+#  - id: !remove ${nombre_thermostats | int < 8 and "consigne_k8"}
+#  - id: !remove ${nombre_thermostats | int < 9 and "consigne_k9"}
 # Supprime les temperatures non utilisées   
   - id: !remove ${nombre_thermostats | int < 2 and "temperature_k2"}
-  - id: !remove ${nombre_thermostats | int < 3 and "temperature_k3"}  
-  - id: !remove ${nombre_thermostats | int < 4 and "temperature_k4"}  
-  - id: !remove ${nombre_thermostats | int < 5 and "temperature_k5"}  
-  - id: !remove ${nombre_thermostats | int < 6 and "temperature_k6"}  
-  - id: !remove ${nombre_thermostats | int < 7 and "temperature_k7"}  
-  - id: !remove ${nombre_thermostats | int < 8 and "temperature_k8"}  
+  - id: !remove ${nombre_thermostats | int < 3 and "temperature_k3"}
+  - id: !remove ${nombre_thermostats | int < 4 and "temperature_k4"}
+  - id: !remove ${nombre_thermostats | int < 5 and "temperature_k5"}
+  - id: !remove ${nombre_thermostats | int < 6 and "temperature_k6"}
+  - id: !remove ${nombre_thermostats | int < 7 and "temperature_k7"}
+  - id: !remove ${nombre_thermostats | int < 8 and "temperature_k8"}
+  - id: !remove ${nombre_thermostats | int < 9 and "temperature_k9"}
   
 number:
+  # Registre 9
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: registre_9_telecommande
@@ -1562,7 +1535,46 @@ number:
     value_type: U_WORD
     on_value:
       - lambda: |-
-            id(update_mode_air_telecommande).execute();  
+            id(update_mode_air_telecommande).execute();
+  # Registre 64
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: debit_air_cible
+    name: "Débit air cible"
+    icon: mdi:turbine
+    entity_category: config
+    register_type: holding
+    address: 64
+    value_type: U_WORD
+    use_write_multiple: true
+    unit_of_measurement: "m³/h"
+    step: 1
+    min_value: 0 #->100
+    max_value: 1200
+    write_lambda: |-
+      // ici x = valeur demandée (en m³/h, avant multiplicateur)
+      if (x > 0 && x < 100) {
+        ESP_LOGW("modbus", "Valeur interdite (%f m³/h). Forcée à 0 m³/h.", x);
+        return 0;   // renvoit une valeur valide
+      }
+      return x;  // valeur acceptée
+  # Registre 152
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: vitesse_air_cible
+    name: "Vitesse air cible"
+    icon: mdi:windsock
+    entity_category: config
+    register_type: holding
+    address: 152
+    value_type: U_WORD
+    use_write_multiple: true
+    unit_of_measurement: "m/s"
+    step: 0.1
+    min_value: 0
+    max_value: 5
+    multiply: 10
+  # Registre 21011
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Consigne ventilateur UI Test"
@@ -1584,6 +1596,7 @@ number:
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
+  # Registre 21013
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Consigne compresseur Test"
@@ -1605,63 +1618,8 @@ number:
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
-      
+
 select:
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Test"
-    id: test_mode
-    icon: "mdi:tools"
-    entity_category: diagnostic
-    address: 21000
-    use_write_multiple: true
-    value_type: U_WORD
-    optimistic: true
-
-    optionsmap:
-      "Aucun": 0
-      "Chauffage": 4
-      "Clim": 5
-      "Appoint Air 1": 8
-      "Appoint Air 2": 9
-      "Tirage au vide": 2
-      "Pump Down": 3
-      "Aéraulique": 11
-
-    write_lambda: |-
-      // value = numéro du test choisi (optionsmap)
-      uint16_t test_id = (uint16_t) value;
-      // 21000 = ID du test, 21001 = 0 pendant le test, 32753 pour l'arrêter
-      uint16_t regs[2] = {test_id, (uint16_t) (test_id == 0 ? 32753 : 0)};
-      item->write_multiple_registers(21000, regs);
-      return {};
-      
-    on_value:
-      then:
-        - if:
-            condition:
-              lambda: |-
-                if (i == id(last_test_index)) {
-                  return false;               // pas de changement => on ne fait rien
-                }
-                id(last_test_index) = i;
-                return true;                  // vrai changement => on continue
-            then:
-              # Stoppe tout timer existant
-              - script.stop: auto_stop_test
-              # Si l'option choisie n'est PAS "Aucun", on relance le timer
-              - if:
-                  condition:
-                    lambda: 'return (id(test_mode).current_option() != "Aucun");'
-                  then:
-                    - script.execute: auto_stop_test
-                    - if:
-                        condition:
-                          lambda: 'return (strcmp(x.c_str(), "Chauffage") == 0) || (strcmp(x.c_str(), "Clim") == 0);'
-                        then:
-                          - script.execute: consigne_test
-
-
   - platform: template
     name: "Mode Air Télécommande"
     id: mode_air_telecommande
@@ -1704,7 +1662,76 @@ select:
         
         //Mise à jour de la valeur du select
         id(update_mode_air_telecommande).execute();
-        
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Test"
+    id: test_mode
+    icon: "mdi:tools"
+    entity_category: diagnostic
+    address: 21000
+    use_write_multiple: true
+    value_type: U_WORD
+    optimistic: true
+    optionsmap:
+      "Aucun": 0
+      "Chauffage": 4
+      "Clim": 5
+      "Appoint Air 1": 8
+      "Appoint Air 2": 9
+      "Tirage au vide": 2
+      "Pump Down": 3
+      "Aéraulique": 11
+    write_lambda: |-
+      // value = numéro du test choisi (optionsmap)
+      uint16_t test_id = (uint16_t) value;
+      // 21000 = ID du test, 21001 = 0 pendant le test, 32753 pour l'arrêter
+      uint16_t regs[2] = {test_id, (uint16_t) (test_id == 0 ? 32753 : 0)};
+      item->write_multiple_registers(21000, regs);
+      return {};
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: |-
+                if (i == id(last_test_index)) {
+                  return false;               // pas de changement => on ne fait rien
+                }
+                id(last_test_index) = i;
+                return true;                  // vrai changement => on continue
+            then:
+              # Stoppe tout timer existant
+              - script.stop: auto_stop_test
+              # Si l'option choisie n'est PAS "Aucun", on relance le timer
+              - if:
+                  condition:
+                    lambda: 'return (id(test_mode).current_option() != "Aucun");'
+                  then:
+                    - script.execute: auto_stop_test
+                    - if:
+                        condition:
+                          lambda: 'return (strcmp(x.c_str(), "Chauffage") == 0) || (strcmp(x.c_str(), "Clim") == 0);'
+                        then:
+                          - script.execute: consigne_test
+  # Registre 31012
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: jour_cycle_antilegionnelle
+    name: "Jour cycle antilégionnelle"
+    icon: mdi:virus-off
+    entity_category: config
+    address: 31012
+    value_type: U_WORD
+    use_write_multiple: true
+    optionsmap:
+      "Off": 0
+      "Lundi": 1
+      "Mardi": 2
+      "Mercredi": 3
+      "Jeudi": 4
+      "Vendredi": 5
+      "Samedi": 6
+      "Dimanche": 7
+  # Registre 31015
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Devise"
@@ -1725,22 +1752,18 @@ switch:
     lambda: |-
         return (((int)id(timestamp_debut_vacances).state != 312764416) &&
                 ((int)id(timestamp_fin_vacances).state == 312764416));
-
     turn_on_action:
       - datetime.datetime.set:
           id: vacances_debut
           datetime: !lambda |-
             return {.second = id(user_set_time).second, .minute = id(user_set_time).minute, .hour = id(user_set_time).hour, .day_of_month = id(user_set_time).hour, .month = id(user_set_time).month, .year = id(user_set_time).year};
-
       - lambda: |-
             std::vector<uint16_t> rtc_data = {0, 0};
             // Effacement du registre de fin de vacances (fonction Modbus 16 / 0x10)
             id(telecommande_client).write_multiple_registers(31010, rtc_data);
-
     turn_off_action:
       - button.press: desactiver_vacances
       - switch.turn_off: vacances
-      
   - platform: template
     id: vacances
     name: "Vacances"
@@ -1758,7 +1781,6 @@ switch:
       if (t_fin <= t_deb)
         return false;
       return true;
-
     turn_on_action:
       - lambda: |-
           // Lire l'heure actuelle (timestamp télécommande)
@@ -1828,8 +1850,6 @@ switch:
           id(telecommande_client).write_multiple_registers(31008, regs);
 
           ESP_LOGI("Vacances", "Activation OK");
-
-
     turn_off_action:
       - button.press: desactiver_vacances
 
@@ -1839,7 +1859,7 @@ light:
     name: "LED bleue télécommande"
     output: output_led
     default_transition_length: 0s
-      
+
 output:
   - platform: modbus_controller
     id: reset_conso
@@ -1851,7 +1871,6 @@ output:
     write_lambda: |-
       item->write_single_register(31017, 0x0001);
       return {};
-    
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: output_led
@@ -1878,4 +1897,3 @@ button:
             // Effacement des quatre registres de vacances (fonction Modbus 16 / 0x10)
             id(telecommande_client).write_multiple_registers(31008, rtc_data);
             ESP_LOGI("Télécommande", "Désactivation vacances");
-          
