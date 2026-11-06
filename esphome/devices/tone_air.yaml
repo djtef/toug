@@ -8,7 +8,7 @@ packages:
   usb: !include usb.yaml
   modbus_air: !include modbus_air.yaml
   telecommande_air: !include telecommande_air.yaml
-  
+
 substitutions:
   K1a: K1a
   K1b: K1b # Normalement identique à K1a
@@ -84,8 +84,8 @@ binary_sensor:
       - delayed_off: 100ms
 
 # Supprime les commandes non utilisées 
-  - id: !remove ${nombre_thermostats | int < 2 and "commande_k2"} 
-  - id: !remove ${nombre_thermostats | int < 3 and "commande_k3"} 
-  - id: !remove ${nombre_thermostats | int < 4 and "commande_k4"} 
-  - id: !remove ${nombre_thermostats | int < 5 and "commande_k5"} 
-  - id: !remove ${nombre_thermostats | int < 6 and "commande_k6"} 
+  - id: !remove ${nombre_thermostats | int < 2 and "commande_k2"}
+  - id: !remove ${nombre_thermostats | int < 3 and "commande_k3"}
+  - id: !remove ${nombre_thermostats | int < 4 and "commande_k4"}
+  - id: !remove ${nombre_thermostats | int < 5 and "commande_k5"}
+  - id: !remove ${nombre_thermostats | int < 6 and "commande_k6"}

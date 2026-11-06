@@ -14,8 +14,8 @@
 esp32:
   board: wt32-eth01
   framework:
-      type: esp-idf
-  
+    type: esp-idf
+
 ethernet:
   type: LAN8720
   mdc_pin: GPIO23
@@ -25,8 +25,7 @@ ethernet:
     mode: CLK_EXT_IN
   phy_addr: 1
   power_pin: GPIO16
-  
+
 # uart:
   # tx_pin: GPIO17
   # rx_pin: GPIO5
-  

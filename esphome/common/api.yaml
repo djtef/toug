@@ -9,7 +9,7 @@
 #
 substitutions:
   api_key: !secret esphome_api_key
-  
+
 api:
   id: component_api
   encryption:
