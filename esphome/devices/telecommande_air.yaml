@@ -128,8 +128,8 @@ script:
                     int nb_c = (int) id(nb_canaux).state;
                     int target_value = std::pow(2, nb_c + 1) - 1;
                     return (int) id(canaux_actifs).state > 0 &&
-                           (int) id(registre_30).state >= target_value &&
-                           (int) id(registre_35).state >= target_value;
+                           (int) id(etat_30).state >= target_value &&
+                           (int) id(etat_35).state >= target_value;
                 timeout: 300s
             - if:
                 condition:
@@ -188,70 +188,70 @@ datetime:
     entity_category: config
     update_interval: 10s
     optimistic: true
-#  - platform: template
-#    name: "Réglage Date/Heure"
-#    id: user_set_time
-#    type: datetime # Pour régler la date ET l'heure
-#    icon: "mdi:clock-edit"
-#    entity_category: config
-#    update_interval: 10s
-#    # Rendre l'entité persistante après redémarrage (bon pour les réglages)
-#    # Source de la valeur : Récupère le timestamp du sensor interne
-#    lambda: |-
-#      float epoch = id(timestamp_telecommande).state;
-#      if (std::isnan(epoch) || epoch == 0) {
-#        return {};  // valeur invalide -> datetime vide
-#      }
-#
-#      // Conversion en structure tm
-#      time_t t = (time_t) epoch;
-#      struct tm *timeinfo = localtime(&t);
-#
-#      // Création d’un objet ESPTime à partir de la struct tm
-#      ESPTime time;
-#      time.year  = timeinfo->tm_year + 1900;
-#      time.month = timeinfo->tm_mon + 1;
-#      time.day_of_month = timeinfo->tm_mday;
-#      time.hour  = timeinfo->tm_hour;
-#      time.minute = timeinfo->tm_min;
-#      time.second = timeinfo->tm_sec;
-#      return time;
-#    set_action:
-#      then:
-#        - lambda: |-
-#            // x est l'objet ESPTime qui représente la nouvelle date/heure définie par l'utilisateur
-#            // Convertir l'ESPTime en une structure tm pour un accès facile aux parties
-#            struct tm time_info = x.to_c_tm();
-#
-#            // --- A. Préparation des variables Date/Heure (Format PAC) ---
-#            
-#            // Calcul de l'Année: (Année Actuelle - 1980)
-#            uint16_t year_pac_offset = (uint16_t)(time_info.tm_year + 1900 - 1980);
-#            
-#            // Conversion des minutes/secondes en "unités de temps" Modbus (R17)
-#            uint16_t total_seconds = time_info.tm_min * 60 + time_info.tm_sec;
-#            // Unité de temps = Secondes / 1.875s (soit Secondes * 8 / 15)
-#            uint16_t time_units_calculated = (uint16_t)(total_seconds / 1.875f);
-#            
-#            // --- B. Reconstitution des Registres 16 et 17 ---
-#
-#            // Registre 16 (Date): [Année Offset (7 bits)] [Mois (4 bits)] [Jour (5 bits)]
-#            uint8_t month = time_info.tm_mon + 1;
-#            uint16_t date_reg = (year_pac_offset << 9) | (month << 5) | time_info.tm_mday;
-#            
-#            // Registre 17 (Heure): [Heures (5 bits)] [Unités de Temps (11 bits)]
-#            uint16_t final_time_reg = (time_info.tm_hour << 11) | (time_units_calculated & 0x7FF);
-#
-#
-#            // --- C. Envoi de la commande Modbus (Registre 16 et 17) ---
-#            
-#            std::vector<uint16_t> rtc_data = {date_reg, final_time_reg};
-#
-#            // Écriture des registres 16 et 17 (fonction Modbus 16 / 0x10)
-#            id(telecommande_client).write_multiple_registers(16, rtc_data);
-#            
-#            ESP_LOGI("Télécommande", "Date/heure modifiée manuellement :  %04d-%02d-%02d %02d:%02d:%02d", 
-#                      time_info.tm_year + 1900, month, time_info.tm_mday, time_info.tm_hour, time_info.tm_min, time_info.tm_sec);
+  - platform: template
+    name: "Réglage Date/Heure"
+    id: user_set_time
+    type: datetime # Pour régler la date ET l'heure
+    icon: "mdi:clock-edit"
+    entity_category: config
+    update_interval: 10s
+    # Rendre l'entité persistante après redémarrage (bon pour les réglages)
+    # Source de la valeur : Récupère le timestamp du sensor interne
+    lambda: |-
+      float epoch = id(timestamp_telecommande).state;
+      if (std::isnan(epoch) || epoch == 0) {
+        return {};  // valeur invalide -> datetime vide
+      }
+
+      // Conversion en structure tm
+      time_t t = (time_t) epoch;
+      struct tm *timeinfo = localtime(&t);
+
+      // Création d’un objet ESPTime à partir de la struct tm
+      ESPTime time;
+      time.year  = timeinfo->tm_year + 1900;
+      time.month = timeinfo->tm_mon + 1;
+      time.day_of_month = timeinfo->tm_mday;
+      time.hour  = timeinfo->tm_hour;
+      time.minute = timeinfo->tm_min;
+      time.second = timeinfo->tm_sec;
+      return time;
+    set_action:
+      then:
+        - lambda: |-
+            // x est l'objet ESPTime qui représente la nouvelle date/heure définie par l'utilisateur
+            // Convertir l'ESPTime en une structure tm pour un accès facile aux parties
+            struct tm time_info = x.to_c_tm();
+
+            // --- A. Préparation des variables Date/Heure (Format PAC) ---
+            
+            // Calcul de l'Année: (Année Actuelle - 1980)
+            uint16_t year_pac_offset = (uint16_t)(time_info.tm_year + 1900 - 1980);
+            
+            // Conversion des minutes/secondes en "unités de temps" Modbus (R17)
+            uint16_t total_seconds = time_info.tm_min * 60 + time_info.tm_sec;
+            // Unité de temps = Secondes / 1.875s (soit Secondes * 8 / 15)
+            uint16_t time_units_calculated = (uint16_t)(total_seconds / 1.875f);
+            
+            // --- B. Reconstitution des Registres 16 et 17 ---
+
+            // Registre 16 (Date): [Année Offset (7 bits)] [Mois (4 bits)] [Jour (5 bits)]
+            uint8_t month = time_info.tm_mon + 1;
+            uint16_t date_reg = (year_pac_offset << 9) | (month << 5) | time_info.tm_mday;
+            
+            // Registre 17 (Heure): [Heures (5 bits)] [Unités de Temps (11 bits)]
+            uint16_t final_time_reg = (time_info.tm_hour << 11) | (time_units_calculated & 0x7FF);
+
+
+            // --- C. Envoi de la commande Modbus (Registre 16 et 17) ---
+            
+            std::vector<uint16_t> rtc_data = {date_reg, final_time_reg};
+
+            // Écriture des registres 16 et 17 (fonction Modbus 16 / 0x10)
+            id(telecommande_client).write_multiple_registers(16, rtc_data);
+            
+            ESP_LOGI("Télécommande", "Date/heure modifiée manuellement :  %04d-%02d-%02d %02d:%02d:%02d", 
+                      time_info.tm_year + 1900, month, time_info.tm_mday, time_info.tm_hour, time_info.tm_min, time_info.tm_sec);
 
 binary_sensor:
   # Registre 131
@@ -1714,7 +1714,7 @@ select:
                           - script.execute: consigne_test
   # Registre 31012
   - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande_lent
+    modbus_controller_id: modbus_telecommande
     id: jour_cycle_antilegionnelle
     name: "Jour cycle antilégionnelle"
     icon: mdi:virus-off
