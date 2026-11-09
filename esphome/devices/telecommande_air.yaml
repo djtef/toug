@@ -833,6 +833,11 @@ sensor:
       // Reconstruction du Registre 17 (Heure)
       uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
 
+      // Registres non renseignés (mode désactivé) : ne pas décoder une date
+      // bidon (le 0/0 normalisé par mktime donnait 1979-11-30).
+      if (date_reg == 0 && time_reg == 0)
+        return NAN;
+
       // --- Logique de Décodage ---
       // Date
       uint8_t day      = date_reg & 0x1F;
@@ -892,6 +897,11 @@ sensor:
       // Reconstruction du Registre 17 (Heure)
       uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
 
+      // Registres non renseignés (mode désactivé) : ne pas décoder une date
+      // bidon (le 0/0 normalisé par mktime donnait 1979-11-30).
+      if (date_reg == 0 && time_reg == 0)
+        return NAN;
+
       // --- Logique de Décodage ---
       // Date
       uint8_t day      = date_reg & 0x1F;
@@ -948,6 +958,11 @@ sensor:
       
       // Reconstruction du Registre 17 (Heure)
       uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
+
+      // Registres non renseignés (mode désactivé) : ne pas décoder une date
+      // bidon (le 0/0 normalisé par mktime donnait 1979-11-30).
+      if (date_reg == 0 && time_reg == 0)
+        return NAN;
 
       // --- Logique de Décodage ---
       // Date
