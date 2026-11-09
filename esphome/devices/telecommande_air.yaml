@@ -1748,8 +1748,10 @@ switch:
     lambda: |-
         float t_deb = id(timestamp_debut_vacances).state;
         float t_fin = id(timestamp_fin_vacances).state;
-        return !std::isnan(t_deb) && !std::isnan(t_fin) &&
-               t_deb >= 1e9f && t_fin < 1e9f;
+        // Un registre vide publie NAN (non renseigné).
+        bool deb_set = !std::isnan(t_deb) && t_deb >= 1e9f;
+        bool fin_set = !std::isnan(t_fin) && t_fin >= 1e9f;
+        return deb_set && !fin_set;
 
     turn_on_action:
       - lambda: |-
