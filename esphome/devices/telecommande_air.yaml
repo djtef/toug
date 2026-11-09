@@ -187,20 +187,9 @@ datetime:
         return {};  // valeur invalide -> datetime vide
       }
 
-      // Conversion en structure tm
-      time_t t = (time_t) epoch;
-      struct tm *timeinfo = localtime(&t);
-
-      // Création d’un objet ESPTime à partir de la struct tm
-      ESPTime time;
-      time.year  = timeinfo->tm_year + 1900;
-      time.month = timeinfo->tm_mon + 1;
-      time.day_of_month = timeinfo->tm_mday;
-      time.hour  = timeinfo->tm_hour;
-      time.minute = timeinfo->tm_min;
-      time.second = timeinfo->tm_sec;
-
-      return time;
+      // `timestamp_telecommande` est un vrai epoch UTC : conversion en heure
+      // locale via la TZ ESPHome (et non localtime(), qui reste en UTC).
+      return ESPTime::from_epoch_local((time_t) epoch);
 
     set_action:
       then:
@@ -858,18 +847,23 @@ sensor:
       uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
       uint8_t secs    = (uint8_t)((int)seconds_total % 60);
 
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
+      // --- Conversion en timestamp UNIX (vrai epoch UTC) ---
+      // Les champs PAC sont une heure murale locale : on les interprète avec
+      // la TZ ESPHome (Europe/Paris) via recalc_timestamp_local(). Sur ESP32,
+      // libc mktime()/localtime() n'appliquent pas cette TZ (elles restent
+      // en UTC), ce qui décalait les timestamps d'une heure.
+      ESPTime t;
+      t.year = year;
+      t.month = month;
+      t.day_of_month = day;
+      t.day_of_week = 0;
+      t.day_of_year = 0;
+      t.hour = hours;
+      t.minute = minutes;
+      t.second = secs;
+      t.is_dst = false;
+      t.recalc_timestamp_local();
+      return (float) t.timestamp;
 
 
 
@@ -912,18 +906,23 @@ sensor:
       uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
       uint8_t secs    = (uint8_t)((int)seconds_total % 60);
 
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
+      // --- Conversion en timestamp UNIX (vrai epoch UTC) ---
+      // Les champs PAC sont une heure murale locale : on les interprète avec
+      // la TZ ESPHome (Europe/Paris) via recalc_timestamp_local(). Sur ESP32,
+      // libc mktime()/localtime() n'appliquent pas cette TZ (elles restent
+      // en UTC), ce qui décalait les timestamps d'une heure.
+      ESPTime t;
+      t.year = year;
+      t.month = month;
+      t.day_of_month = day;
+      t.day_of_week = 0;
+      t.day_of_year = 0;
+      t.hour = hours;
+      t.minute = minutes;
+      t.second = secs;
+      t.is_dst = false;
+      t.recalc_timestamp_local();
+      return (float) t.timestamp;
 
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -964,18 +963,23 @@ sensor:
       uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
       uint8_t secs    = (uint8_t)((int)seconds_total % 60);
 
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
+      // --- Conversion en timestamp UNIX (vrai epoch UTC) ---
+      // Les champs PAC sont une heure murale locale : on les interprète avec
+      // la TZ ESPHome (Europe/Paris) via recalc_timestamp_local(). Sur ESP32,
+      // libc mktime()/localtime() n'appliquent pas cette TZ (elles restent
+      // en UTC), ce qui décalait les timestamps d'une heure.
+      ESPTime t;
+      t.year = year;
+      t.month = month;
+      t.day_of_month = day;
+      t.day_of_week = 0;
+      t.day_of_year = 0;
+      t.hour = hours;
+      t.minute = minutes;
+      t.second = secs;
+      t.is_dst = false;
+      t.recalc_timestamp_local();
+      return (float) t.timestamp;
 
 
 
@@ -1784,7 +1788,9 @@ switch:
 
     turn_on_action:
       - lambda: |-
-          // Lire l'heure actuelle (timestamp télécommande)
+          // `timestamp_telecommande` et `state_as_esptime()` fournissent
+          // désormais de vrais epochs UTC : toutes les comparaisons sont
+          // cohérentes, sans passer par mktime()/localtime().
           float now_epoch = id(timestamp_telecommande).state;
           if (std::isnan(now_epoch) || now_epoch <= 0) {
             ESP_LOGE("Vacances", "timestamp_telecommande invalide -> abort");
@@ -1792,18 +1798,10 @@ switch:
           }
           time_t t_now = (time_t) now_epoch;
 
-          // ---- Conversion des datetime en time_t (epoch) ----
-          // Début
-            ESPTime dt = id(vacances_debut).state_as_esptime();
-            struct tm tmv = dt.to_c_tm();
-            time_t t_deb_user = mktime(&tmv);
-
-
-          // Fin
-            dt = id(vacances_fin).state_as_esptime();
-            tmv = dt.to_c_tm();
-            time_t t_fin_user = mktime(&tmv);
-
+          ESPTime dt_deb = id(vacances_debut).state_as_esptime();
+          ESPTime dt_fin = id(vacances_fin).state_as_esptime();
+          time_t t_deb_user = dt_deb.timestamp;
+          time_t t_fin_user = dt_fin.timestamp;
 
           // ---- Validations ----
           bool erreur = false;
@@ -1819,7 +1817,7 @@ switch:
             ESP_LOGE("Vacances", "Fin <= Début -> refus");
             erreur = true;
           }
-          if (erreur){
+          if (erreur) {
             auto call1 = id(vacances_debut).make_call();
             call1.set_datetime("1970-01-01 00:00:00");
             call1.perform();
@@ -1827,20 +1825,20 @@ switch:
             call2.set_datetime("1970-01-01 00:00:00");
             call2.perform();
             return;
-            }
-          // ---- Conversion en registres PAC ----
-          auto make_regs = [&](time_t ts) {
-            struct tm *ti = localtime(&ts);
-            uint16_t year_pac = (uint16_t)(ti->tm_year + 1900 - 1980) & 0x7F;
-            uint16_t date_reg = (year_pac << 9) | ((ti->tm_mon + 1) << 5) | ti->tm_mday;
-            uint16_t total_seconds = ti->tm_min * 60 + ti->tm_sec;
+          }
+
+          // ---- Encodage PAC direct des champs muraux (sans epoch) ----
+          auto make_regs = [](const ESPTime &t) {
+            uint16_t year_pac = (uint16_t)(t.year - 1980) & 0x7F;
+            uint16_t date_reg = (year_pac << 9) | (t.month << 5) | t.day_of_month;
+            uint16_t total_seconds = t.minute * 60 + t.second;
             uint16_t units = (uint16_t)(total_seconds / 1.875f) & 0x7FF;
-            uint16_t time_reg = (ti->tm_hour << 11) | units;
+            uint16_t time_reg = (t.hour << 11) | units;
             return std::pair<uint16_t,uint16_t>(date_reg, time_reg);
           };
 
-          auto deb = make_regs(t_deb_user);
-          auto fin = make_regs(t_fin_user);
+          auto deb = make_regs(dt_deb);
+          auto fin = make_regs(dt_fin);
 
           std::vector<uint16_t> regs = {
             deb.first, deb.second,
@@ -1850,7 +1848,9 @@ switch:
           // Écriture des quatre registres de début et fin de vacances
           id(telecommande_client).write_multiple_registers(31008, regs);
 
-          ESP_LOGI("Vacances", "Activation OK");
+          ESP_LOGI("Vacances", "Activation OK : %04d-%02d-%02d %02d:%02d -> %04d-%02d-%02d %02d:%02d",
+                   dt_deb.year, dt_deb.month, dt_deb.day_of_month, dt_deb.hour, dt_deb.minute,
+                   dt_fin.year, dt_fin.month, dt_fin.day_of_month, dt_fin.hour, dt_fin.minute);
 
 
     turn_off_action:
