@@ -187,20 +187,9 @@ datetime:
         return {};  // valeur invalide -> datetime vide
       }
 
-      // Conversion en structure tm
-      time_t t = (time_t) epoch;
-      struct tm *timeinfo = localtime(&t);
-
-      // Création d’un objet ESPTime à partir de la struct tm
-      ESPTime time;
-      time.year  = timeinfo->tm_year + 1900;
-      time.month = timeinfo->tm_mon + 1;
-      time.day_of_month = timeinfo->tm_mday;
-      time.hour  = timeinfo->tm_hour;
-      time.minute = timeinfo->tm_min;
-      time.second = timeinfo->tm_sec;
-
-      return time;
+      // `timestamp_telecommande` est un vrai epoch UTC : conversion en heure
+      // locale via la TZ ESPHome (et non localtime(), qui reste en UTC).
+      return ESPTime::from_epoch_local((time_t) epoch);
 
     set_action:
       then:
@@ -844,6 +833,11 @@ sensor:
       // Reconstruction du Registre 17 (Heure)
       uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
 
+      // Registres non renseignés (mode désactivé) : ne pas décoder une date
+      // bidon (le 0/0 normalisé par mktime donnait 1979-11-30).
+      if (date_reg == 0 && time_reg == 0)
+        return NAN;
+
       // --- Logique de Décodage ---
       // Date
       uint8_t day      = date_reg & 0x1F;
@@ -858,18 +852,23 @@ sensor:
       uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
       uint8_t secs    = (uint8_t)((int)seconds_total % 60);
 
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
+      // --- Conversion en timestamp UNIX (vrai epoch UTC) ---
+      // Les champs PAC sont une heure murale locale : on les interprète avec
+      // la TZ ESPHome (Europe/Paris) via recalc_timestamp_local(). Sur ESP32,
+      // libc mktime()/localtime() n'appliquent pas cette TZ (elles restent
+      // en UTC), ce qui décalait les timestamps d'une heure.
+      ESPTime t;
+      t.year = year;
+      t.month = month;
+      t.day_of_month = day;
+      t.day_of_week = 0;
+      t.day_of_year = 0;
+      t.hour = hours;
+      t.minute = minutes;
+      t.second = secs;
+      t.is_dst = false;
+      t.recalc_timestamp_local();
+      return (float) t.timestamp;
 
 
 
@@ -898,6 +897,11 @@ sensor:
       // Reconstruction du Registre 17 (Heure)
       uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
 
+      // Registres non renseignés (mode désactivé) : ne pas décoder une date
+      // bidon (le 0/0 normalisé par mktime donnait 1979-11-30).
+      if (date_reg == 0 && time_reg == 0)
+        return NAN;
+
       // --- Logique de Décodage ---
       // Date
       uint8_t day      = date_reg & 0x1F;
@@ -912,18 +916,23 @@ sensor:
       uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
       uint8_t secs    = (uint8_t)((int)seconds_total % 60);
 
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
+      // --- Conversion en timestamp UNIX (vrai epoch UTC) ---
+      // Les champs PAC sont une heure murale locale : on les interprète avec
+      // la TZ ESPHome (Europe/Paris) via recalc_timestamp_local(). Sur ESP32,
+      // libc mktime()/localtime() n'appliquent pas cette TZ (elles restent
+      // en UTC), ce qui décalait les timestamps d'une heure.
+      ESPTime t;
+      t.year = year;
+      t.month = month;
+      t.day_of_month = day;
+      t.day_of_week = 0;
+      t.day_of_year = 0;
+      t.hour = hours;
+      t.minute = minutes;
+      t.second = secs;
+      t.is_dst = false;
+      t.recalc_timestamp_local();
+      return (float) t.timestamp;
 
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -950,6 +959,11 @@ sensor:
       // Reconstruction du Registre 17 (Heure)
       uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
 
+      // Registres non renseignés (mode désactivé) : ne pas décoder une date
+      // bidon (le 0/0 normalisé par mktime donnait 1979-11-30).
+      if (date_reg == 0 && time_reg == 0)
+        return NAN;
+
       // --- Logique de Décodage ---
       // Date
       uint8_t day      = date_reg & 0x1F;
@@ -964,18 +978,23 @@ sensor:
       uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
       uint8_t secs    = (uint8_t)((int)seconds_total % 60);
 
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
+      // --- Conversion en timestamp UNIX (vrai epoch UTC) ---
+      // Les champs PAC sont une heure murale locale : on les interprète avec
+      // la TZ ESPHome (Europe/Paris) via recalc_timestamp_local(). Sur ESP32,
+      // libc mktime()/localtime() n'appliquent pas cette TZ (elles restent
+      // en UTC), ce qui décalait les timestamps d'une heure.
+      ESPTime t;
+      t.year = year;
+      t.month = month;
+      t.day_of_month = day;
+      t.day_of_week = 0;
+      t.day_of_year = 0;
+      t.hour = hours;
+      t.minute = minutes;
+      t.second = secs;
+      t.is_dst = false;
+      t.recalc_timestamp_local();
+      return (float) t.timestamp;
 
 
 
@@ -1722,20 +1741,44 @@ switch:
   - platform: template
     name: "Hors-gel"
     icon: "mdi:snowflake"
+    # Hors-gel = date/heure courante dans 31008/31009, zéro dans 31010/31011.
+    # Les registres à zéro se décodent en 1979-11-30 (epoch 312768000) ; on
+    # utilise donc un seuil (< 1e9) plutôt que l'ancienne sentinelle 312764416,
+    # qui ne correspondait à aucune valeur réelle.
     lambda: |-
-        return (((int)id(timestamp_debut_vacances).state != 312764416) &&
-                ((int)id(timestamp_fin_vacances).state == 312764416));
+        float t_deb = id(timestamp_debut_vacances).state;
+        float t_fin = id(timestamp_fin_vacances).state;
+        // Un registre vide publie NAN (non renseigné).
+        bool deb_set = !std::isnan(t_deb) && t_deb >= 1e9f;
+        bool fin_set = !std::isnan(t_fin) && t_fin >= 1e9f;
+        return deb_set && !fin_set;
 
     turn_on_action:
-      - datetime.datetime.set:
-          id: vacances_debut
-          datetime: !lambda |-
-            return {.second = id(user_set_time).second, .minute = id(user_set_time).minute, .hour = id(user_set_time).hour, .day_of_month = id(user_set_time).hour, .month = id(user_set_time).month, .year = id(user_set_time).year};
-
       - lambda: |-
-            std::vector<uint16_t> rtc_data = {0, 0};
-            // Effacement du registre de fin de vacances (fonction Modbus 16 / 0x10)
-            id(telecommande_client).write_multiple_registers(31010, rtc_data);
+          ESPTime now = id(homeassistant_time).now();
+          if (!now.is_valid()) {
+            ESP_LOGE("hors_gel", "Heure HA invalide -> Hors-gel annulé");
+            return;
+          }
+
+          // Registres 31008/31009 : date et heure courantes (format PAC)
+          uint16_t year_pac = (uint16_t)(now.year - 1980) & 0x7F;
+          uint16_t date_reg = (year_pac << 9) | (now.month << 5) | now.day_of_month;
+          uint16_t total_seconds = now.minute * 60 + now.second;
+          uint16_t units = (uint16_t)(total_seconds / 1.875f) & 0x7FF;
+          uint16_t time_reg = (now.hour << 11) | units;
+
+          // 31010/31011 = 0 : pas de date de fin -> mode Hors-gel
+          std::vector<uint16_t> regs = {date_reg, time_reg, 0, 0};
+          id(telecommande_client).write_multiple_registers(31008, regs);
+
+          // Miroir dans l'entité HA
+          auto call = id(vacances_debut).make_call();
+          call.set_datetime(now);
+          call.perform();
+
+          ESP_LOGI("hors_gel", "Hors-gel activé : %04d-%02d-%02d %02d:%02d:%02d",
+                   now.year, now.month, now.day_of_month, now.hour, now.minute, now.second);
 
     turn_off_action:
       - button.press: desactiver_vacances
@@ -1750,8 +1793,9 @@ switch:
       float t_deb = id(timestamp_debut_vacances).state;
       float t_fin = id(timestamp_fin_vacances).state;
       float t_now = id(timestamp_telecommande).state;
+      // Registres à zéro -> epoch 1979-11-30 ; < 1e9 signifie « non renseigné ».
       if (std::isnan(t_deb) || std::isnan(t_fin) ||
-          t_deb <= 312764416 || t_fin <= 312764416)
+          t_deb < 1e9f || t_fin < 1e9f)
         return false;
       if (t_deb <= t_now || t_fin <= t_now)
         return false;
@@ -1761,7 +1805,9 @@ switch:
 
     turn_on_action:
       - lambda: |-
-          // Lire l'heure actuelle (timestamp télécommande)
+          // `timestamp_telecommande` et `state_as_esptime()` fournissent
+          // désormais de vrais epochs UTC : toutes les comparaisons sont
+          // cohérentes, sans passer par mktime()/localtime().
           float now_epoch = id(timestamp_telecommande).state;
           if (std::isnan(now_epoch) || now_epoch <= 0) {
             ESP_LOGE("Vacances", "timestamp_telecommande invalide -> abort");
@@ -1769,18 +1815,10 @@ switch:
           }
           time_t t_now = (time_t) now_epoch;
 
-          // ---- Conversion des datetime en time_t (epoch) ----
-          // Début
-            ESPTime dt = id(vacances_debut).state_as_esptime();
-            struct tm tmv = dt.to_c_tm();
-            time_t t_deb_user = mktime(&tmv);
-
-
-          // Fin
-            dt = id(vacances_fin).state_as_esptime();
-            tmv = dt.to_c_tm();
-            time_t t_fin_user = mktime(&tmv);
-
+          ESPTime dt_deb = id(vacances_debut).state_as_esptime();
+          ESPTime dt_fin = id(vacances_fin).state_as_esptime();
+          time_t t_deb_user = dt_deb.timestamp;
+          time_t t_fin_user = dt_fin.timestamp;
 
           // ---- Validations ----
           bool erreur = false;
@@ -1796,7 +1834,7 @@ switch:
             ESP_LOGE("Vacances", "Fin <= Début -> refus");
             erreur = true;
           }
-          if (erreur){
+          if (erreur) {
             auto call1 = id(vacances_debut).make_call();
             call1.set_datetime("1970-01-01 00:00:00");
             call1.perform();
@@ -1804,20 +1842,20 @@ switch:
             call2.set_datetime("1970-01-01 00:00:00");
             call2.perform();
             return;
-            }
-          // ---- Conversion en registres PAC ----
-          auto make_regs = [&](time_t ts) {
-            struct tm *ti = localtime(&ts);
-            uint16_t year_pac = (uint16_t)(ti->tm_year + 1900 - 1980) & 0x7F;
-            uint16_t date_reg = (year_pac << 9) | ((ti->tm_mon + 1) << 5) | ti->tm_mday;
-            uint16_t total_seconds = ti->tm_min * 60 + ti->tm_sec;
+          }
+
+          // ---- Encodage PAC direct des champs muraux (sans epoch) ----
+          auto make_regs = [](const ESPTime &t) {
+            uint16_t year_pac = (uint16_t)(t.year - 1980) & 0x7F;
+            uint16_t date_reg = (year_pac << 9) | (t.month << 5) | t.day_of_month;
+            uint16_t total_seconds = t.minute * 60 + t.second;
             uint16_t units = (uint16_t)(total_seconds / 1.875f) & 0x7FF;
-            uint16_t time_reg = (ti->tm_hour << 11) | units;
+            uint16_t time_reg = (t.hour << 11) | units;
             return std::pair<uint16_t,uint16_t>(date_reg, time_reg);
           };
 
-          auto deb = make_regs(t_deb_user);
-          auto fin = make_regs(t_fin_user);
+          auto deb = make_regs(dt_deb);
+          auto fin = make_regs(dt_fin);
 
           std::vector<uint16_t> regs = {
             deb.first, deb.second,
@@ -1827,7 +1865,9 @@ switch:
           // Écriture des quatre registres de début et fin de vacances
           id(telecommande_client).write_multiple_registers(31008, regs);
 
-          ESP_LOGI("Vacances", "Activation OK");
+          ESP_LOGI("Vacances", "Activation OK : %04d-%02d-%02d %02d:%02d -> %04d-%02d-%02d %02d:%02d",
+                   dt_deb.year, dt_deb.month, dt_deb.day_of_month, dt_deb.hour, dt_deb.minute,
+                   dt_fin.year, dt_fin.month, dt_fin.day_of_month, dt_fin.hour, dt_fin.minute);
 
 
     turn_off_action:
