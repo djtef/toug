@@ -65,8 +65,31 @@ sensor:
     register_type: holding
     address: 0x0010
     value_type: U_DWORD
-    filters:
-        - offset: 229413106
+    # Les registres 0x10/0x11 forment une date/heure PAC packée, pas un epoch :
+    #   0x10 = [année-1980 (7 bits)][mois (4 bits)][jour (5 bits)]
+    #   0x11 = [heures (5 bits)][minutes*32 + secondes/1,875 (11 bits)]
+    # L'ancien `offset: 229413106` ajoutait une constante à ce packing et
+    # produisait une date fausse. On décode les champs puis on les interprète
+    # comme heure locale (TZ ESPHome) pour obtenir l'epoch UTC réel.
+    lambda: |-
+      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
+      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
+
+      float seconds_total = (time_reg & 0x7FF) * 1.875f;
+
+      ESPTime t;
+      t.year = 1980 + ((date_reg >> 9) & 0x7F);
+      t.month = (date_reg >> 5) & 0x0F;
+      t.day_of_month = date_reg & 0x1F;
+      t.day_of_week = 0;
+      t.day_of_year = 0;
+      t.hour = (time_reg >> 11) & 0x1F;
+      t.minute = (uint8_t)((int) seconds_total / 60) % 60;
+      t.second = (uint8_t)((int) seconds_total % 60);
+      t.is_dst = false;
+
+      t.recalc_timestamp_local();
+      return (float) t.timestamp;
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Température pièce principale"
