@@ -1722,20 +1722,42 @@ switch:
   - platform: template
     name: "Hors-gel"
     icon: "mdi:snowflake"
+    # Hors-gel = date/heure courante dans 31008/31009, zéro dans 31010/31011.
+    # Les registres à zéro se décodent en 1979-11-30 (epoch 312768000) ; on
+    # utilise donc un seuil (< 1e9) plutôt que l'ancienne sentinelle 312764416,
+    # qui ne correspondait à aucune valeur réelle.
     lambda: |-
-        return (((int)id(timestamp_debut_vacances).state != 312764416) &&
-                ((int)id(timestamp_fin_vacances).state == 312764416));
+        float t_deb = id(timestamp_debut_vacances).state;
+        float t_fin = id(timestamp_fin_vacances).state;
+        return !std::isnan(t_deb) && !std::isnan(t_fin) &&
+               t_deb >= 1e9f && t_fin < 1e9f;
 
     turn_on_action:
-      - datetime.datetime.set:
-          id: vacances_debut
-          datetime: !lambda |-
-            return {.second = id(user_set_time).second, .minute = id(user_set_time).minute, .hour = id(user_set_time).hour, .day_of_month = id(user_set_time).hour, .month = id(user_set_time).month, .year = id(user_set_time).year};
-
       - lambda: |-
-            std::vector<uint16_t> rtc_data = {0, 0};
-            // Effacement du registre de fin de vacances (fonction Modbus 16 / 0x10)
-            id(telecommande_client).write_multiple_registers(31010, rtc_data);
+          ESPTime now = id(homeassistant_time).now();
+          if (!now.is_valid()) {
+            ESP_LOGE("hors_gel", "Heure HA invalide -> Hors-gel annulé");
+            return;
+          }
+
+          // Registres 31008/31009 : date et heure courantes (format PAC)
+          uint16_t year_pac = (uint16_t)(now.year - 1980) & 0x7F;
+          uint16_t date_reg = (year_pac << 9) | (now.month << 5) | now.day_of_month;
+          uint16_t total_seconds = now.minute * 60 + now.second;
+          uint16_t units = (uint16_t)(total_seconds / 1.875f) & 0x7FF;
+          uint16_t time_reg = (now.hour << 11) | units;
+
+          // 31010/31011 = 0 : pas de date de fin -> mode Hors-gel
+          std::vector<uint16_t> regs = {date_reg, time_reg, 0, 0};
+          id(telecommande_client).write_multiple_registers(31008, regs);
+
+          // Miroir dans l'entité HA
+          auto call = id(vacances_debut).make_call();
+          call.set_datetime(now);
+          call.perform();
+
+          ESP_LOGI("hors_gel", "Hors-gel activé : %04d-%02d-%02d %02d:%02d:%02d",
+                   now.year, now.month, now.day_of_month, now.hour, now.minute, now.second);
 
     turn_off_action:
       - button.press: desactiver_vacances
@@ -1750,8 +1772,9 @@ switch:
       float t_deb = id(timestamp_debut_vacances).state;
       float t_fin = id(timestamp_fin_vacances).state;
       float t_now = id(timestamp_telecommande).state;
+      // Registres à zéro -> epoch 1979-11-30 ; < 1e9 signifie « non renseigné ».
       if (std::isnan(t_deb) || std::isnan(t_fin) ||
-          t_deb <= 312764416 || t_fin <= 312764416)
+          t_deb < 1e9f || t_fin < 1e9f)
         return false;
       if (t_deb <= t_now || t_fin <= t_now)
         return false;
