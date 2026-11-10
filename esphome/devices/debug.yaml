@@ -1,98 +1,130 @@
 sensor:
+  # Registre 6
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat num"
+    id: etat_6
+    name: "État 6"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 6
+  # Registre 29
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 29"
+    id: etat_29
+    name: "État 29"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 29
+  # Registre 30
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 30"
+    id: etat_30
+    name: "État 30"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 30
+  # Registre 35
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 35"
+    id: etat_35
+    name: "État 35"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 35
+  # Registre 47
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 47"
+    id: etat_47
+    name: "État 47"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 47
+  # Registre 67
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 67"
+    id: etat_67
+    name: "État 67"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 67
+  # Registre 68
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 68"
+    id: etat_68
+    name: "État 68"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 68
+  # Registre 69
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 69"
+    id: etat_69
+    name: "État 69"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 69
+  # Registre 101
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 101"
+    id: etat_101
+    name: "État 101"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 101
+  # Registre 102
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 102"
+    id: etat_102
+    name: "État 102"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 102
+  # Registre 137
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 137"
+    id: etat_137
+    name: "État 137"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 137
+  # Registre 220
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 142"
-    entity_category: diagnostic
-    value_type: U_WORD
-    register_type: holding
-    address: 142
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Etat 220"
+    id: etat_220
+    name: "État 220"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding
     address: 220
+  # Registre 362
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    name: "Etat 362"
+    id: etat_362
+    name: "État 362"
+    icon: mdi:ufo
     entity_category: diagnostic
     value_type: U_WORD
     register_type: holding

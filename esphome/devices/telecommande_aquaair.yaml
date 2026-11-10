@@ -15,14 +15,16 @@ script:
           ESP_LOGD("Mode ECS télécommande", "Publish mode ECS %s", mode_str.c_str());
 
 binary_sensor:
+  # Registre 20272
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: ECS tout électrique
     register_type: holding
     address: 20272
     icon: "mdi:resistor"
-    
+
 sensor:
+  # Registre 106
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Echangeur eau chaude"
@@ -36,6 +38,7 @@ sensor:
     icon: "mdi:gauge" # Icône pour la pression
     filters:
       - multiply: 0.01
+  # Registre 111
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Sonde ECS haut"
@@ -49,7 +52,7 @@ sensor:
     icon: "mdi:coolant-temperature" # Température d'eau chaude sanitaire (ECS)
     filters:
       - multiply: 0.01
-
+  # Registre 112
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Sonde ECS bas"
@@ -63,7 +66,7 @@ sensor:
     icon: "mdi:coolant-temperature"
     filters:
       - multiply: 0.01
-
+  # Registre 113
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "ECS ligne liquide Th4"
@@ -77,6 +80,39 @@ sensor:
     icon: "mdi:thermometer" # Température échangeur air # Température de la ligne liquide
     filters:
       - multiply: 0.01
+  # Registre 6080
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Pourcentage ECS"
+    device_class: battery # Utilisation de la classe "battery" pour un pourcentage
+    state_class: measurement
+    register_type: holding
+    address: 6080
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:water-boiler" # Niveau de ballon d'eau chaude
+  # Registre 21672
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Conso eau chaude"
+    register_type: holding
+    address: 21672
+    value_type: U_DWORD
+    device_class: energy
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "kWh"
+  # Registre 21674
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Conso eau chaude appoint"
+    register_type: holding
+    address: 21674
+    value_type: U_DWORD
+    device_class: energy
+    state_class: total_increasing  # Si c'est un compteur cumulatif
+    unit_of_measurement: "kWh"
+  # Registre 21682
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Coût eau chaude"
@@ -89,26 +125,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.001
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Conso eau chaude"
-    register_type: holding
-    address: 21672
-    value_type: U_DWORD
-    device_class: energy
-    state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "kWh"
-
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Conso eau chaude appoint"
-    register_type: holding
-    address: 21674
-    value_type: U_DWORD
-    device_class: energy
-    state_class: total_increasing  # Si c'est un compteur cumulatif
-    unit_of_measurement: "kWh"
-
+  # Registre 31002
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_ecs_telecommande_lue
@@ -120,18 +137,6 @@ sensor:
     unit_of_measurement: "°C"
     accuracy_decimals: 0
     icon: "mdi:thermostat"
-  # --- Registres ECS et Divers (6000+) ---
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    name: "Pourcentage ECS"
-    device_class: battery # Utilisation de la classe "battery" pour un pourcentage
-    state_class: measurement
-    register_type: holding
-    address: 6080
-    value_type: U_WORD
-    unit_of_measurement: "%"
-    accuracy_decimals: 0
-    icon: "mdi:water-boiler" # Niveau de ballon d'eau chaude
 
 number:
   - id: !extend registre_9_telecommande
@@ -139,6 +144,23 @@ number:
         - lambda: |-
             id(update_mode_ecs_telecommande).execute();
             id(update_mode_air_telecommande).execute();
+  # Registre 31002
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: consigne_ecs
+    name: "Consigne ECS"
+    icon: mdi:thermostat
+    device_class: temperature
+    register_type: holding
+    address: 31002
+    value_type: S_WORD
+    use_write_multiple: true
+    step: 0.1
+    min_value: 7
+    max_value: 61
+    unit_of_measurement: "°C"
+    multiply: 100
+  # Registre 31007
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: composition_foyer
@@ -154,7 +176,7 @@ number:
     icon: "mdi:account-group"
     lambda: return x + 2; 
     write_lambda: return x - 2;  
-    
+
 select:
   - id: !extend test_mode
     optionsmap:
@@ -168,8 +190,6 @@ select:
       "Tirage au vide": 2
       "Pump Down": 3
       "Aéraulique": 11
-
-
   - platform: template
     name: "Mode ECS Télécommande"
     id: mode_ecs_telecommande
@@ -208,7 +228,6 @@ select:
         
         //Mise à jour de la valeur du select
         id(update_mode_ecs_telecommande).execute();
-         
   - id: !extend mode_air_telecommande
     set_action:
       lambda: |-
@@ -242,8 +261,9 @@ select:
         
         //Mise à jour de la valeur du select
         id(update_mode_air_telecommande).execute();
-      
+
 output:
+  # Registre 20279
   - platform: modbus_controller
     id: reset_anode
     modbus_controller_id: modbus_telecommande
@@ -254,7 +274,7 @@ output:
     write_lambda: |-
       item->write_single_register(20279, 0x0003);
       return {};
-      
+
 button:
   - platform: template
     name: "Reset Anode"

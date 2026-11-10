@@ -10,15 +10,15 @@ substitutions:
   i2c_bus_a_scl: "14"
   i2c_bus_b_sda: "04"
   i2c_bus_b_scl: "02"
-  
+
 # uart:
   # tx_pin: GPIO17
   # rx_pin: GPIO5
-  
+
 esp32:
   board: wt32-eth01
   framework:
-      type: esp-idf
-  
+    type: esp-idf
+
 packages:
   wifi: !include ../components/wifi.yaml

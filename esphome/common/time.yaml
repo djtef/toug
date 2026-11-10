@@ -14,7 +14,6 @@ time:
     timezone: "${time_timezone}"
     on_time_sync:
       - component.update: sensor_uptime_timestamp
-
   - <<: !include ../time/sntp.yaml
     timezone: "${time_timezone}"
 

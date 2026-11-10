@@ -5,17 +5,17 @@ uart:
       baud_rate: 19200
       parity: EVEN
       stop_bits: 1
-      
+
 modbus:
     - id: modbus1
       uart_id: U1
-      
+
 modbus_controller:
     - address: 0x1
       id: modbus_user
       update_interval: 10s
       modbus_id: modbus1
-      
+
 binary_sensor:
     # Non fonctionnel
     # - platform: modbus_controller
@@ -25,7 +25,7 @@ binary_sensor:
       # register_type: holding
       # address: 0x0082
       # device_class: problem
-      
+
 text_sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
@@ -47,7 +47,9 @@ text_sensor:
         default: return std::string("Unknown");
       }
       return x;
+
 sensor:
+  # Registre 0x0001
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Version logiciel régulateur"
@@ -203,6 +205,7 @@ sensor:
       - multiply: 0.001
 
 number:
+  # Registre 0x0096
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K1a}"
@@ -216,6 +219,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x0097
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K1b}"
@@ -229,6 +233,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x0098
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K2}"
@@ -242,6 +247,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x0099
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K3}"
@@ -255,6 +261,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x009A
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K4}"
@@ -268,6 +275,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x009B
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K5}"
@@ -281,6 +289,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x009C
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K6}"
@@ -294,6 +303,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x009D
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K7}"
@@ -307,6 +317,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x009E
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K8}"
@@ -320,6 +331,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x009F
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Thermostat ${K9}"
@@ -333,6 +345,7 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+  # Registre 0x00A0
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Tarif HP"
@@ -347,6 +360,7 @@ number:
     use_write_multiple: true
     multiply: 1000
     step: 0.001
+  # Registre 0x00A1
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Tarif HC"
@@ -370,7 +384,7 @@ number:
   - id: !remove ${nombre_thermostats | int < 7 and "thermostat_k7"}
   - id: !remove ${nombre_thermostats | int < 8 and "thermostat_k8"}
   - id: !remove ${nombre_thermostats | int < 9 and "thermostat_k9"}
-  
+
 select:
   - platform: modbus_controller
     modbus_controller_id: modbus_user

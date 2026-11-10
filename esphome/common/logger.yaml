@@ -12,3 +12,4 @@ logger:
   # Some devices this is needed, and in general,
   # I really don't look at it.
   baud_rate: 0
+  #level: VERY_VERBOSE
