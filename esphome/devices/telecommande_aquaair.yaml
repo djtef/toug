@@ -126,17 +126,17 @@ sensor:
     filters:
       - multiply: 0.001
   # Registre 31002
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    id: consigne_ecs_telecommande_lue
-#    name: Consigne ECS télécommande
-#    device_class: temperature
-#    register_type: holding
-#    address: 31002
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 0
-#    icon: "mdi:thermostat"
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: consigne_ecs_telecommande_lue
+    name: Consigne ECS télécommande
+    device_class: temperature
+    register_type: holding
+    address: 31002
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    icon: "mdi:thermostat"
 
 number:
   - id: !extend registre_9_telecommande
