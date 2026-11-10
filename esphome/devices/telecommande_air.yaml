@@ -486,8 +486,7 @@ text_sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: proga
-    #name: "Progr. A dataset"
-    internal: true
+    name: "Progr. A dataset"
     entity_category: diagnostic
     register_type: holding
     address: 31200
@@ -497,8 +496,7 @@ text_sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progb
-    #name: "Progr. B dataset"
-    internal: true
+    name: "Progr. B dataset"
     entity_category: diagnostic
     register_type: holding
     address: 31214
@@ -508,8 +506,7 @@ text_sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progc
-    #name: "Progr. C dataset"
-    internal: true
+    name: "Progr. C dataset"
     entity_category: diagnostic
     register_type: holding
     address: 31228
@@ -519,8 +516,7 @@ text_sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progd
-    #name: "Progr. D dataset"
-    internal: true
+    name: "Progr. D dataset"
     entity_category: diagnostic
     register_type: holding
     address: 31242
@@ -1384,135 +1380,135 @@ sensor:
     filters:
       - multiply: 0.001
 
-#  # --- Consignes de zone (31100+) ---
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K1a}"
-#    id: consigne_k1a
-#    device_class: temperature
-#    register_type: holding
-#    address: 31100
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K1b}"
-#    id: consigne_k1b
-#    device_class: temperature
-#    register_type: holding
-#    address: 31101
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K2}"
-#    id: consigne_k2
-#    device_class: temperature
-#    register_type: holding
-#    address: 31102
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K3}"
-#    id: consigne_k3
-#    device_class: temperature
-#    register_type: holding
-#    address: 31103
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K4}"
-#    id: consigne_k4
-#    device_class: temperature
-#    register_type: holding
-#    address: 31104
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K5}"
-#    id: consigne_k5
-#    device_class: temperature
-#    register_type: holding
-#    address: 31105
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K6}"
-#    id: consigne_k6
-#    device_class: temperature
-#    register_type: holding
-#    address: 31106
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K7}"
-#    id: consigne_k7
-#    device_class: temperature
-#    register_type: holding
-#    address: 31107
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-#  - platform: modbus_controller
-#    modbus_controller_id: modbus_telecommande
-#    name: "Consigne zone ${K8}"
-#    id: consigne_k8
-#    device_class: temperature
-#    register_type: holding
-#    address: 31108
-#    value_type: U_WORD
-#    unit_of_measurement: "°C"
-#    accuracy_decimals: 2
-#    icon: "mdi:thermostat"
-#    filters:
-#      - multiply: 0.01
-# Supprime les consignes non utilisées 
-#  - id: !remove ${nombre_thermostats | int < 2 and "consigne_k2"}
-#  - id: !remove ${nombre_thermostats | int < 3 and "consigne_k3"}
-#  - id: !remove ${nombre_thermostats | int < 4 and "consigne_k4"}
-#  - id: !remove ${nombre_thermostats | int < 5 and "consigne_k5"}
-#  - id: !remove ${nombre_thermostats | int < 6 and "consigne_k6"}
-#  - id: !remove ${nombre_thermostats | int < 7 and "consigne_k7"}
-#  - id: !remove ${nombre_thermostats | int < 8 and "consigne_k8"}
-#  - id: !remove ${nombre_thermostats | int < 9 and "consigne_k9"}
+  # --- Consignes de zone (31100+) ---
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K1a}"
+    id: consigne_k1a
+    device_class: temperature
+    register_type: holding
+    address: 31100
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K1b}"
+    id: consigne_k1b
+    device_class: temperature
+    register_type: holding
+    address: 31101
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K2}"
+    id: consigne_k2
+    device_class: temperature
+    register_type: holding
+    address: 31102
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K3}"
+    id: consigne_k3
+    device_class: temperature
+    register_type: holding
+    address: 31103
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K4}"
+    id: consigne_k4
+    device_class: temperature
+    register_type: holding
+    address: 31104
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K5}"
+    id: consigne_k5
+    device_class: temperature
+    register_type: holding
+    address: 31105
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K6}"
+    id: consigne_k6
+    device_class: temperature
+    register_type: holding
+    address: 31106
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K7}"
+    id: consigne_k7
+    device_class: temperature
+    register_type: holding
+    address: 31107
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    name: "Consigne zone ${K8}"
+    id: consigne_k8
+    device_class: temperature
+    register_type: holding
+    address: 31108
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    accuracy_decimals: 2
+    icon: "mdi:thermostat"
+    filters:
+      - multiply: 0.01
+ Supprime les consignes non utilisées 
+  - id: !remove ${nombre_thermostats | int < 2 and "consigne_k2"}
+  - id: !remove ${nombre_thermostats | int < 3 and "consigne_k3"}
+  - id: !remove ${nombre_thermostats | int < 4 and "consigne_k4"}
+  - id: !remove ${nombre_thermostats | int < 5 and "consigne_k5"}
+  - id: !remove ${nombre_thermostats | int < 6 and "consigne_k6"}
+  - id: !remove ${nombre_thermostats | int < 7 and "consigne_k7"}
+  - id: !remove ${nombre_thermostats | int < 8 and "consigne_k8"}
+  - id: !remove ${nombre_thermostats | int < 9 and "consigne_k9"}
 # Supprime les temperatures non utilisées   
   - id: !remove ${nombre_thermostats | int < 2 and "temperature_k2"}
   - id: !remove ${nombre_thermostats | int < 3 and "temperature_k3"}
